@@ -1,0 +1,94 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "amq"
+version = "0.1.0"
+description = "Automated Mixed-precision Quantization for Large Language Models"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "NSGAQuant Team"}
+]
+keywords = ["quantization", "llm", "optimization", "mixed-precision", "neural-network"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+dependencies = [
+    "torch>=2.0.0",
+    "transformers==4.45.2",
+    "accelerate>=0.20.0",
+    "hqq==0.2.2",
+    "pymoo==0.6.1.3",
+    "pySOT",
+    "datasets",
+    "tqdm",
+    "scikit-learn",
+    "numpy",
+    "pandas",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=22.0.0",
+    "flake8>=4.0.0",
+    "isort>=5.10.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/amq"
+Documentation = "https://github.com/yourusername/amq/docs"
+Repository = "https://github.com/yourusername/amq"
+Issues = "https://github.com/yourusername/amq/issues"
+
+[project.scripts]
+amq-search = "examples.search_model:main"
+amq-sensitivity = "examples.linear_sensitivity:main"
+amq-post-search = "examples.post_search:main"
+
+[tool.setuptools]
+packages = {find = {}}
+
+[tool.setuptools.package-data]
+amq = ["**/*.json"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | \.tox
+  | build
+  | dist
+  | __pycache__
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_gitignore = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+

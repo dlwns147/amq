@@ -1,0 +1,187 @@
+{
+    "Llama-2-7b-hf": {
+        "n_block": 32,
+        "n_layer": 2,
+        "layer": ["self_attn", "mlp"],
+        "layer_numel": {
+            "self_attn": 67108864,
+            "mlp": 135266304
+        },
+        "n_linear": 7,
+        "linear": ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.o_proj", "mlp.gate_proj", "mlp.up_proj", "mlp.down_proj"],
+        "linear_shape": {
+            "self_attn.q_proj": [4096, 4096],
+            "self_attn.k_proj": [4096, 4096],
+            "self_attn.v_proj": [4096, 4096],
+            "self_attn.o_proj": [4096, 4096],
+            "mlp.gate_proj": [11008, 4096],
+            "mlp.up_proj": [11008, 4096],
+            "mlp.down_proj": [4096, 11008]
+        },
+        "hierarchy": {"self_attn.q_proj": "self_attn", "self_attn.k_proj": "self_attn", "self_attn.v_proj": "self_attn", "self_attn.o_proj": "self_attn", "mlp.gate_proj": "mlp", "mlp.up_proj": "mlp", "mlp.down_proj": "mlp"},
+        "model_numel": 6476005376,
+        "model": "model", 
+        "layers": "model.layers",
+        "pre_layer": ["model.embed_tokens"],
+        "post_layer": ["model.norm", "lm_head", "model.rotary_emb"]
+    },
+
+    "Llama-2-13b-hf": {
+        "n_block": 40,
+        "n_layer": 2,
+        "layer": ["self_attn", "mlp"],
+        "layer_numel": {
+            "self_attn": 104857600,
+            "mlp": 212336640
+        },
+        "n_linear": 7,
+        "linear": ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.o_proj", "mlp.gate_proj", "mlp.up_proj", "mlp.down_proj"],
+        "linear_shape": {
+            "self_attn.q_proj": [5120, 5120],
+            "self_attn.k_proj": [5120, 5120],
+            "self_attn.v_proj": [5120, 5120],
+            "self_attn.o_proj": [5120, 5120],
+            "mlp.gate_proj": [13824, 5120],
+            "mlp.up_proj": [13824, 5120],
+            "mlp.down_proj": [5120, 13824]
+        },
+        "hierarchy": {"self_attn.q_proj": "self_attn", "self_attn.k_proj": "self_attn", "self_attn.v_proj": "self_attn", "self_attn.o_proj": "self_attn", "mlp.gate_proj": "mlp", "mlp.up_proj": "mlp", "mlp.down_proj": "mlp"},
+        "model_numel": 12687769600,
+        "model": "model", 
+        "layers": "model.layers",
+        "pre_layer": ["model.embed_tokens"],
+        "post_layer": ["model.norm", "lm_head", "model.rotary_emb"]
+    },
+
+    "Llama-2-70b-hf": {
+        "n_block": 80,
+        "n_layer": 2,
+        "layer": ["self_attn", "mlp"],
+        "layer_numel": {
+            "self_attn": 150994944,
+            "mlp": 704643072
+        },
+        "n_linear": 7,
+        "linear_shape": {
+            "self_attn.q_proj": [8192, 8192],
+            "self_attn.k_proj": [1024, 8192],
+            "self_attn.v_proj": [1024, 8192],
+            "self_attn.o_proj": [8192, 8192],
+            "mlp.gate_proj": [28672, 8192],
+            "mlp.up_proj": [28672, 8192],
+            "mlp.down_proj": [8192, 28672]
+        },
+        "linear": ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.o_proj", "mlp.gate_proj", "mlp.up_proj", "mlp.down_proj"],
+        "hierarchy": {"self_attn.q_proj": "self_attn", "self_attn.k_proj": "self_attn", "self_attn.v_proj": "self_attn", "self_attn.o_proj": "self_attn", "mlp.gate_proj": "mlp", "mlp.up_proj": "mlp", "mlp.down_proj": "mlp"},
+        "model_numel": 68451041280,
+        "model": "model", 
+        "layers": "model.layers",
+        "pre_layer": ["model.embed_tokens"],
+        "post_layer": ["model.norm", "lm_head", "model.rotary_emb"]
+    },
+
+    "Meta-Llama-3-8B": {
+        "n_block": 32,
+        "n_linear": 7,
+        "n_layer": 2,
+        "layer": ["self_attn", "mlp"],
+        "layer_numel": {
+            "self_attn": 41943040,
+            "mlp": 176160768
+        },
+        "linear": ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.o_proj", "mlp.gate_proj", "mlp.up_proj", "mlp.down_proj"],
+        "linear_numel": {
+            "self_attn.q_proj": 16777216,
+            "self_attn.k_proj": 4194304,
+            "self_attn.v_proj": 4194304,
+            "self_attn.o_proj": 16777216,
+            "mlp.gate_proj": 58720256,
+            "mlp.up_proj": 58720256,
+            "mlp.down_proj": 58720256
+        },
+        "hierarchy": {"self_attn.q_proj": "self_attn", "self_attn.k_proj": "self_attn", "self_attn.v_proj": "self_attn", "self_attn.o_proj": "self_attn", "mlp.gate_proj": "mlp", "mlp.up_proj": "mlp", "mlp.down_proj": "mlp"},
+        "model_numel": 6979321856,
+        "model": "model", 
+        "layers": "model.layers"
+    },
+
+    "Llama-3.1-8B": {
+        "n_block": 32,
+        "n_layer": 2,
+        "layer": ["self_attn", "mlp"],
+        "layer_numel": {
+            "self_attn": 41943040,
+            "mlp": 176160768
+        },
+        "n_linear": 7,
+        "linear": ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.o_proj", "mlp.gate_proj", "mlp.up_proj", "mlp.down_proj"],
+        "linear_shape": {
+            "self_attn.q_proj": [4096, 4096],
+            "self_attn.k_proj": [1024, 4096],
+            "self_attn.v_proj": [1024, 4096],
+            "self_attn.o_proj": [4096, 4096],
+            "mlp.gate_proj": [14336, 4096],
+            "mlp.up_proj": [14336, 4096],
+            "mlp.down_proj": [4096, 14336]
+        },
+        "hierarchy": {"self_attn.q_proj": "self_attn", "self_attn.k_proj": "self_attn", "self_attn.v_proj": "self_attn", "self_attn.o_proj": "self_attn", "mlp.gate_proj": "mlp", "mlp.up_proj": "mlp", "mlp.down_proj": "mlp"},
+        "model_numel": 6979321856,
+        "model": "model", 
+        "layers": "model.layers",
+        "pre_layer": ["model.embed_tokens"],
+        "post_layer": ["model.norm", "lm_head", "model.rotary_emb"]
+    },
+    "Llama-3.1-70B": {
+        "n_block": 80,
+        "n_layer": 2,
+        "layer": ["self_attn", "mlp"],
+        "layer_numel": {
+            "self_attn": 150994944,
+            "mlp": 704643072
+        },
+        "n_linear": 7,
+        "linear": ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.o_proj", "mlp.gate_proj", "mlp.up_proj", "mlp.down_proj"],
+        "linear_shape": {
+            "self_attn.q_proj": [8192, 8192],
+            "self_attn.k_proj": [1024, 8192],
+            "self_attn.v_proj": [1024, 8192],
+            "self_attn.o_proj": [8192, 8192],
+            "mlp.gate_proj": [28672, 8192],
+            "mlp.up_proj": [28672, 8192],
+            "mlp.down_proj": [8192, 28672]
+        },
+        "hierarchy": {"self_attn.q_proj": "self_attn", "self_attn.k_proj": "self_attn", "self_attn.v_proj": "self_attn", "self_attn.o_proj": "self_attn", "mlp.gate_proj": "mlp", "mlp.up_proj": "mlp", "mlp.down_proj": "mlp"},
+        "model_numel": 68451041280,
+        "model": "model", 
+        "layers": "model.layers",
+        "pre_layer": ["model.embed_tokens"],
+        "post_layer": ["model.norm", "lm_head", "model.rotary_emb"]
+    },
+
+    "Llama-3.1-8B-Instruct": {
+        "n_block": 32,
+        "n_layer": 2,
+        "layer": ["self_attn", "mlp"],
+        "layer_numel": {
+            "self_attn": 41943040,
+            "mlp": 176160768
+        },
+        "n_linear": 7,
+        "linear": ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.o_proj", "mlp.gate_proj", "mlp.up_proj", "mlp.down_proj"],
+        "linear_shape": {
+            "self_attn.q_proj": [4096, 4096],
+            "self_attn.k_proj": [1024, 4096],
+            "self_attn.v_proj": [1024, 4096],
+            "self_attn.o_proj": [4096, 4096],
+            "mlp.gate_proj": [14336, 4096],
+            "mlp.up_proj": [14336, 4096],
+            "mlp.down_proj": [4096, 14336]
+        },
+        "hierarchy": {"self_attn.q_proj": "self_attn", "self_attn.k_proj": "self_attn", "self_attn.v_proj": "self_attn", "self_attn.o_proj": "self_attn", "mlp.gate_proj": "mlp", "mlp.up_proj": "mlp", "mlp.down_proj": "mlp"},
+        "model_numel": 6979321856,
+        "model": "model", 
+        "layers": "model.layers",
+        "pre_layer": ["model.embed_tokens"],
+        "post_layer": ["model.norm", "lm_head", "model.rotary_emb"]
+    }
+}

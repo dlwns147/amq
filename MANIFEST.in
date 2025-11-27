@@ -1,0 +1,30 @@
+# Include documentation
+include README.md
+include LICENSE
+include requirements.txt
+include pyproject.toml
+
+# Include config files
+recursive-include configs *.json
+
+# Include package data
+recursive-include amq *.json
+
+# Exclude development and test files
+recursive-exclude tests *
+recursive-exclude docs *
+exclude .gitignore
+
+# Exclude compiled files
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *$py.class
+global-exclude *.so
+
+# Exclude data and result files
+recursive-exclude data *
+recursive-exclude csv *
+recursive-exclude fig *
+recursive-exclude save *
+recursive-exclude outlier *
+

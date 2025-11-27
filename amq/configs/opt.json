@@ -1,0 +1,34 @@
+{
+    "facebook/opt-6.7b": {
+        "n_block": 32,
+        "n_linear": 6,
+        "module": ["self_attn"],
+        "module_numel": {
+            "self_attn": 67108864,
+            "mlp": 135266304
+        },
+        "linear": ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.out_proj", "fc1", "fc2"],
+        "linear_numel": {
+            "self_attn.q_proj": 16777216,
+            "self_attn.k_proj": 16777216,
+            "self_attn.v_proj": 16777216,
+            "self_attn.o_proj": 16777216,
+            "mlp.down_proj": 45088768,
+            "mlp.up_proj": 45088768,
+            "mlp.gate_proj": 45088768
+        },
+        "model_numel": 6476005376,
+        "model": "model", 
+        "layers": "model.decoder.layers"
+    },
+    "facebook/opt-13b": {
+        "n_block": 40,
+        "n_linear": 7,
+        "linear": ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.out_proj", "fc1", "fc2"]
+    },
+    "facebook/opt-30b": {
+        "n_block": 80,
+        "n_linear": 7,
+        "linear": ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.out_proj", "fc1", "fc2"]
+    }
+}
