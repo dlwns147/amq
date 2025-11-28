@@ -56,19 +56,19 @@ class SearchSpace:
                     blk = int(blk)
 
                     if linear == 'q_proj':
-                        q_list[blk] = max(bits)
+                        q_list[blk] = max(self.bits_range)
                     elif linear == 'k_proj':
-                        k_list[blk] = max(bits)
+                        k_list[blk] = max(self.bits_range)
                     elif linear == 'v_proj':
-                        v_list[blk] = max(bits)
+                        v_list[blk] = max(self.bits_range)
                     elif linear == 'o_proj':
-                        o_list[blk] = max(bits)
+                        o_list[blk] = max(self.bits_range)
                     elif linear == 'gate_proj':
-                        gate_list[blk] = max(bits)
+                        gate_list[blk] = max(self.bits_range)
                     elif linear == 'up_proj':
-                        up_list[blk] = max(bits)
+                        up_list[blk] = max(self.bits_range)
                     elif linear == 'down_proj':
-                        down_list[blk] = max(bits)
+                        down_list[blk] = max(self.bits_range)
                     else:
                         raise NotImplementedError(f"linear : {linear}")
 

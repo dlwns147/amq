@@ -1,5 +1,7 @@
+TODAY=`date +%y%m%d%H%M`
+
 ## GPU Args
-CUDA_VISIBLE_DEVICES=0
+CUDA_VISIBLE_DEVICES=${1}
 N_PROC=1
 PORT_NUM=$(( ( RANDOM % 10000 )  + 10000 ))
 
@@ -7,7 +9,7 @@ PORT_NUM=$(( ( RANDOM % 10000 )  + 10000 ))
 MODEL_PATH=meta-llama
 MODEL_NAME=Llama-2-7b-hf
 QUANTIZATION_PROXY_PATHS=("/SSD/Woo/hqq/Llama-2-7b-hf_2bit_128gs_1axis" "/SSD/Woo/hqq/Llama-2-7b-hf_3bit_128gs_1axis" "/SSD/Woo/hqq/Llama-2-7b-hf_4bit_128gs_1axis")
-GPU_ID=0
+GPU_ID=${CUDA_VISIBLE_DEVICES}
 
 ## Search Args
 SENSITIVITY_THRESHOLD=2.0
@@ -19,8 +21,8 @@ PREDICTOR=rbf
 ITERATIONS=200
 # N_DOE=250
 N_DOE=250
-# N_ITER=50
-N_ITER=10
+N_ITER=50
+# N_ITER=10
 MAX_VALUE=1.0
 
 SUBSET_POP_SIZE=100
@@ -29,7 +31,6 @@ CROSSOVER_PROB=0.9
 MUT_PROB=0.1
 
 SAVE_ITER=1
-SAVE_PATH=amq/results/${MODEL_NAME}_dataset_${DATASET}
 RESULT_FILE=results.txt
 
 ## Data Args
@@ -37,6 +38,8 @@ DATASET=wikitext2
 N_SAMPLE=128
 SEQLEN=2048
 SEED=0
+
+SAVE_PATH=amq/results/${TODAY}_${MODEL_NAME}_dataset_${DATASET}
 
 args=(
     --model_path ${MODEL_PATH} \

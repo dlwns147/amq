@@ -45,8 +45,8 @@ class AuxiliarySingleLevelProblem(Problem):
             f[i, 0] = metric
             f[i, 1] = bits_usage
 
-            g[i, 0] = 1 - bits_usage / self.search_space.bits_range[0]
-            g[i, 1] = bits_usage / self.search_space.bits_range[-1] - 1
+            g[i, 0] = 1 - bits_usage / (self.search_space.bits_range[0] + 32 / self.group_size)
+            g[i, 1] = bits_usage / (self.search_space.bits_range[-1] + 32 / self.group_size) - 1
             
         out["F"] = f
         out["G"] = g

@@ -121,7 +121,6 @@ class Search:
         # main loop of the search
         for it in range(start_it, self.iterations + 1):
             if accelerator.is_main_process:
-                accelerator.print(self.args)
                 iter_start = time()
 
                 # construct accuracy predictor surrogate model from archive
