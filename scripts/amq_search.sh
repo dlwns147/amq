@@ -1,4 +1,7 @@
+## GPU Args
 CUDA_VISIBLE_DEVICES=0
+N_PROC=1
+PORT_NUM=$(( ( RANDOM % 10000 )  + 10000 ))
 
 ## Model Args
 MODEL_PATH=meta-llama
@@ -14,17 +17,20 @@ SENSITIVITY_SEQLEN=2048
 
 PREDICTOR=rbf
 ITERATIONS=200
+# N_DOE=250
 N_DOE=250
-N_ITER=50
+# N_ITER=50
+N_ITER=10
 MAX_VALUE=1.0
 
+SUBSET_POP_SIZE=100
 GA_POP_SIZE=200
 CROSSOVER_PROB=0.9
 MUT_PROB=0.1
 
 SAVE_ITER=1
-SAVE=True
-RESUME_PATH=None
+SAVE_PATH=amq/results/${MODEL_NAME}_dataset_${DATASET}
+RESULT_FILE=results.txt
 
 ## Data Args
 DATASET=wikitext2
@@ -33,35 +39,32 @@ SEQLEN=2048
 SEED=0
 
 args=(
-    --model_path ${MODEL_PATH}
-    --model_name ${MODEL_NAME}
+    --model_path ${MODEL_PATH} \
+    --model_name ${MODEL_NAME} \
     --quantization_proxy_paths ${QUANTIZATION_PROXY_PATHS[@]}
-    --gpu_id ${GPU_ID}
-    --sensitivity_threshold ${SENSITIVITY_THRESHOLD}
-    --sensitivity_datasets ${SENSITIVITY_DATASETS}
-    --sensitivity_n_sample ${SENSITIVITY_N_SAMPLE}
-    --sensitivity_seqlen ${SENSITIVITY_SEQLEN}
-    --predictor ${PREDICTOR}
-    --iterations ${ITERATIONS}
-    --n_doe ${N_DOE}
-    --n_iter ${N_ITER}
-    --max_value ${MAX_VALUE}
-    --ga_pop_size ${GA_POP_SIZE}
-    --crossover_prob ${CROSSOVER_PROB}
-    --mut_prob ${MUT_PROB}
-    --save_iter ${SAVE_ITER}
-    --resume_path ${RESUME_PATH}
-    --dataset ${DATASET}
+    --gpu_id ${GPU_ID} \
+    --sensitivity_threshold ${SENSITIVITY_THRESHOLD} \
+    --sensitivity_datasets ${SENSITIVITY_DATASETS} \
+    --sensitivity_n_sample ${SENSITIVITY_N_SAMPLE} \
+    --sensitivity_seqlen ${SENSITIVITY_SEQLEN} \
+    --predictor ${PREDICTOR} \
+    --iterations ${ITERATIONS} \
+    --n_doe ${N_DOE} \
+    --n_iter ${N_ITER} \
+    --max_value ${MAX_VALUE} \
+    --subset_pop_size ${SUBSET_POP_SIZE} \
+    --ga_pop_size ${GA_POP_SIZE} \
+    --crossover_prob ${CROSSOVER_PROB} \
+    --mut_prob ${MUT_PROB} \
+    --save_iter ${SAVE_ITER} \
+    --save_path ${SAVE_PATH} \
+    --result_file ${RESULT_FILE} \
+    --dataset ${DATASET} \
     --n_sample ${N_SAMPLE}
-    --seqlen ${SEQLEN}
-    --seed ${SEED}
+    --seqlen ${SEQLEN} \
+    --seed ${SEED} \
 )
-
-if [ ${SAVE} == True ]; then
-    args+=(--save)
-fi
 
 echo ${args[@]}
 
-CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES} \
-python amq/amq_search.py ${args[@]}
+CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES} accelerate launch --num_processes=${N_PROC} --num_machines=1 --main_process_port=${PORT_NUM} amq/amq_search.py ${args[@]}

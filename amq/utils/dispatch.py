@@ -47,14 +47,12 @@ def simple_dispatch_model(model, device_map):
 
     for n, d in device_map.items():
         m = get_module_by_name_suffix(model, n)
-        # print(f'n: {n}, d: {d}, m: {m}')
         if d != "cpu":
             d = torch.device(d)
             hook = AlignDevicesHook(d, io_same_device=True, place_submodules=True)
             # if m is a block, replace hqq meta data
             for n, submodule in m.named_modules():
                 if hasattr(submodule, 'meta'):
-                    # print(f'{n} : {submodule}')
                     submodule.meta['scale'] = submodule.meta['scale'].to(d)
                     submodule.meta['zero'] = submodule.meta['zero'].to(d)
                 if hasattr(submodule, 'bias'):
@@ -62,7 +60,6 @@ def simple_dispatch_model(model, device_map):
                         submodule.bias.data = submodule.bias.data.to(d)
                     if isinstance(submodule.bias, torch.Tensor):
                         submodule.bias = submodule.bias.to(d)
-                    # print(f"d : {d}, meta['scale'] : {submodule.meta['scale'].device}, meta['zero'] : {submodule.meta['zero'].device}")
             add_hook_to_module(m, hook)
     gc.collect()
     torch.cuda.empty_cache()

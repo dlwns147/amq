@@ -40,7 +40,6 @@ def get_c4(tokenizer, seqlen=2048, batch_size=1, cache_dir=None):
     valdata = load_dataset('allenai/c4', data_files={'validation': 'en/c4-validation.00000-of-00008.json.gz'}, split='validation', cache_dir=cache_dir)
 
     valenc = tokenizer(' '.join(valdata[:1100]['text']), return_tensors='pt')
-    # valenc = valenc.input_ids[:, :(256 * seqlen)]
     valenc = valenc.input_ids[:, :(256 * seqlen)]
     n_sample = valenc.numel() // seqlen
     valenc = valenc[:, :n_sample * seqlen].reshape(n_sample, seqlen)

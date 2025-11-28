@@ -84,6 +84,8 @@ def add_search_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
                        help='Maximum value for search space in genetic algorithm')
     
     # Genetic Algorithm parameters
+    group.add_argument('--subset_pop_size', type=int, default=100,
+                       help='Population size for subset selection')
     group.add_argument('--ga_pop_size', type=int, default=200,
                        help='Population size for genetic algorithm')
     group.add_argument('--crossover_prob', type=float, default=0.9,
@@ -94,8 +96,10 @@ def add_search_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     # General parameters
     group.add_argument('--save_iter', type=int, default=1,
                        help='Save results every n iterations')
-    group.add_argument('--save', action='store_true', default=False,
-                       help='Save results')
+    group.add_argument('--save_path', type=str, default=None,
+                       help='Path to save results')
+    group.add_argument('--result_file', type=str, default='results.txt',
+                       help='File name to save results')
     group.add_argument('--resume_path', type=str, default=None,
                        help='Path to resume search from checkpoint')
     

@@ -76,8 +76,8 @@ class SearchSpace:
                 bits_usage = get_bits_usage(new_arch, self.config, self.group_size)
                 if (new_arch not in data) and \
                     (new_arch not in pool) and \
-                    (math.isclose(bits_usage, self.bits_range[0]) or bits_usage > self.bits_range[0]) and \
-                    (math.isclose(bits_usage, self.bits_range[-1]) or bits_usage < self.bits_range[-1]):
+                    (math.isclose(bits_usage, self.bits_range[0] + (32 / self.group_size)) or bits_usage > (self.bits_range[0] + (32 / self.group_size))) and \
+                    (math.isclose(bits_usage, self.bits_range[-1] + (32 / self.group_size)) or bits_usage < (self.bits_range[-1] + (32 / self.group_size))):
                     break
                 
             data.append(new_arch)

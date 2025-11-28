@@ -22,6 +22,7 @@ from utils.ga import MySampling, BinaryCrossover, MyMutation, IntMutation
 class Search:
     def __init__(self, args, config, accelerator, device_map):
         self.args = args
+        self.quantization_proxy_paths = args.quantization_proxy_paths
         self.resume_path = args.resume_path
         self.iterations = args.iterations
         self.n_doe = args.n_doe
@@ -36,7 +37,10 @@ class Search:
         self.result_file = args.result_file
         self.max_value = args.max_value
         self.dataset = args.dataset
-        self.group_size = args.group_size
+        self.seqlen = args.seqlen
+        self.n_sample = args.n_sample
+
+        self.group_size = 128 # default group size
         self.config = config
         self.device_map = device_map
 
@@ -46,27 +50,28 @@ class Search:
         self.sensitivity_threshold = args.sensitivity_threshold
 
         linear_list = list(self.sensitivity_json['loss'].keys())
-        medium = np.median(self.sensitivity_json['loss'].values())
+        medium = np.median(list(map(float, self.sensitivity_json['loss'].values())))
         pass_linear_list = [linear for linear in linear_list if self.sensitivity_json['loss'][linear] > medium * self.sensitivity_threshold]
         
         self.evaluator = Evaluator(
             config=self.config,
             accelerator=accelerator,
             model_id=model_id,
-            quantization_proxy_paths=args.quantization_proxy_paths,
+            quantization_proxy_paths=self.quantization_proxy_paths,
             bits_range=[2, 3, 4],
-            group_size=args.group_size,
-            seqlen=args.seqlen,
-            n_sample=args.n_sample,
-            datasets=[args.dataset],
+            group_size=self.group_size,
+            seqlen=self.seqlen,
+            n_sample=self.n_sample,
+            datasets=[self.dataset],
             device_map=device_map,
         )
+        # self.evaluator = None
 
         self.search_space = SearchSpace(
             config=self.config,
             n_block=self.config['n_block'],
             n_linear=len(self.config['linear']),
-            group_size=args.group_size,
+            group_size=self.group_size,
             pass_linear_list=pass_linear_list,
             bits_range=[2, 3, 4],
         )
@@ -229,7 +234,7 @@ class Search:
             ub = np.ones((n_linear, n_block))
             
             for linear_idx, linear in enumerate(self.config['linear']):
-                ub[linear_idx] = len(getattr(self.search_space, f"{linear.split('.')[-1]}_option")) - 1
+                ub[linear_idx] = len(self.search_space.bits_range) - 1
             
             lb = np.delete(lb.flatten(), self.search_space.pass_linear_idx_list, axis=-1)
             ub = np.delete(ub.flatten(), self.search_space.pass_linear_idx_list, axis=-1)

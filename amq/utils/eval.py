@@ -20,7 +20,7 @@ def get_logits(model, loader):
 def eval_loss(model, accelerator, loader, dense_logits_list, seqlen=2048):
     losses = []
     
-    for i, inputs in enumerate(tqdm(loader, desc='Eval Loss')):
+    for i, inputs in enumerate(loader):
         # Forward pass through the model
         outputs = model(inputs)
         lm_logits = outputs.logits
