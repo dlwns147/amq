@@ -17,10 +17,11 @@ Usage:
 import os
 import json
 
+from search.optimizer import Search
 from utils.args import parse_args
 from utils.func import init_accelerator, set_seed
 
-def run_search(args):
+def run_search(args, config):
     """
     Steps 2-4: Quantization Proxy + Quality Predictor + Iterative Search
     
@@ -28,16 +29,12 @@ def run_search(args):
     - Build surrogate model to predict quality metrics
     - Perform multi-objective search using NSGA-II/III
     """
-    from search.optimizer import Search
     
-    with open(args.config, 'r') as f:
-        config = json.load(f)[args.model_name]
+    set_seed(args.seed)
     
     accelerator, device_map = init_accelerator(args.gpu_id, config)
     accelerator.print("=== Running Mixed-Precision Search ===")
     accelerator.print(args)
-    
-    set_seed(args.seed)
     
     # Initialize search engine
     engine = Search(
@@ -66,8 +63,11 @@ def main():
             args.sensitivity_json = json.load(f)
     else:
         raise ValueError(f"Sensitivity analysis not found. Please run sensitivity analysis first.")
+    
+    with open(args.config, 'r') as f:
+        config = json.load(f)[args.model_name]
 
-    run_search(args)
+    run_search(args, config)
 
 if __name__ == '__main__':
     main()

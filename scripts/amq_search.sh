@@ -10,7 +10,6 @@ MODEL_PATH=meta-llama
 MODEL_NAME=Llama-2-7b-hf
 CONFIG=amq/configs/llama.json
 QUANTIZATION_PROXY_PATHS=("/SSD/Woo/hqq/Llama-2-7b-hf_2bit_128gs_1axis" "/SSD/Woo/hqq/Llama-2-7b-hf_3bit_128gs_1axis" "/SSD/Woo/hqq/Llama-2-7b-hf_4bit_128gs_1axis")
-GPU_ID=${CUDA_VISIBLE_DEVICES}
 
 ## Search Args
 SENSITIVITY_THRESHOLD=2.0
@@ -38,7 +37,9 @@ N_SAMPLE=128
 SEQLEN=2048
 SEED=0
 
+## Base Args
 SAVE_PATH=amq/results/${TODAY}_${MODEL_NAME}_dataset_${DATASET}
+GPU_ID=${CUDA_VISIBLE_DEVICES}
 
 args=(
     --model_path ${MODEL_PATH} \

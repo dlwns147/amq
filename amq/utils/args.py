@@ -7,6 +7,11 @@ def get_base_parser() -> argparse.ArgumentParser:
         description='AMQ: AMQ: Enabling AutoML for Mixed-precision Weight-Only Quantization of Large Language Models',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+    
+    parser.add_argument('--gpu_id', type=str, default='0',
+                       help='id of available gpus')
+    parser.add_argument('--save_path', type=str, default=None,
+                       help='Path to save results')
 
     return parser
 
@@ -22,8 +27,6 @@ def add_model_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
                        help='Path to model configuration JSON file')
     group.add_argument('--quantization_proxy_paths', type=str, nargs='+', default=[], 
                        help='Paths to quantization proxies')
-    group.add_argument('--gpu_id', type=str, default='0',
-                       help='id of available gpus')
     
     return parser
 
@@ -39,8 +42,6 @@ def add_quantization_args(parser: argparse.ArgumentParser) -> argparse.ArgumentP
                        help='Group size for quantization (128 for per-channel)')
 
     # Candidates Selection parameters
-    group.add_argument('--prefer', type=str, nargs='+', default=[],
-                       help='Preference for candidate selection (e.g., "metric#0.0 bits#3.0")')
     group.add_argument('--target_bits', type=float, default=3.0,
                        help='Target bit-width')
 
@@ -93,8 +94,6 @@ def add_search_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     # General parameters
     group.add_argument('--save_iter', type=int, default=1,
                        help='Save results every n iterations')
-    group.add_argument('--save_path', type=str, default=None,
-                       help='Path to save results')
     group.add_argument('--result_file', type=str, default='results.txt',
                        help='File name to save results')
     group.add_argument('--resume_path', type=str, default=None,
@@ -132,8 +131,6 @@ def parse_args(mode: str = 'search') -> argparse.Namespace:
     parser = get_base_parser()
     parser = add_model_args(parser)
     parser = add_data_args(parser)
-
-    # TODO: add sensitivity analysis arguments
 
     if mode == 'search':
         parser = add_search_args(parser)
