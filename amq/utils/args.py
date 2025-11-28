@@ -20,9 +20,6 @@ def add_model_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
                        help='Name of the model (e.g., Llama-2-7b-hf)')
     group.add_argument('--config', type=str, default='amq/configs/llama.json',
                        help='Path to model configuration JSON file')
-    # group.add_argument('--dtype', type=str, default='float16', 
-    #                    choices=['float16', 'float', 'fp16', 'bfloat16', 'bfloat', 'bf16', 'auto'],
-    #                    help='Data type for model weights')
     group.add_argument('--quantization_proxy_paths', type=str, nargs='+', default=[], 
                        help='Paths to quantization proxies')
     group.add_argument('--gpu_id', type=str, default='0',

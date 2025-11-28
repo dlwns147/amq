@@ -8,6 +8,7 @@ PORT_NUM=$(( ( RANDOM % 10000 )  + 10000 ))
 ## Model Args
 MODEL_PATH=meta-llama
 MODEL_NAME=Llama-2-7b-hf
+CONFIG=amq/configs/llama.json
 QUANTIZATION_PROXY_PATHS=("/SSD/Woo/hqq/Llama-2-7b-hf_2bit_128gs_1axis" "/SSD/Woo/hqq/Llama-2-7b-hf_3bit_128gs_1axis" "/SSD/Woo/hqq/Llama-2-7b-hf_4bit_128gs_1axis")
 GPU_ID=${CUDA_VISIBLE_DEVICES}
 
@@ -19,10 +20,8 @@ SENSITIVITY_SEQLEN=2048
 
 PREDICTOR=rbf
 ITERATIONS=200
-# N_DOE=250
 N_DOE=250
 N_ITER=50
-# N_ITER=10
 MAX_VALUE=1.0
 
 SUBSET_POP_SIZE=100
@@ -44,6 +43,7 @@ SAVE_PATH=amq/results/${TODAY}_${MODEL_NAME}_dataset_${DATASET}
 args=(
     --model_path ${MODEL_PATH} \
     --model_name ${MODEL_NAME} \
+    --config ${CONFIG} \
     --quantization_proxy_paths ${QUANTIZATION_PROXY_PATHS[@]}
     --gpu_id ${GPU_ID} \
     --sensitivity_threshold ${SENSITIVITY_THRESHOLD} \

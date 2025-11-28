@@ -110,23 +110,18 @@ def main():
                         help='Path to model configuration file')
     
     # Output configuration
-    parser.add_argument('--save', action='store_true',
-                        help='Save the output file')
+    parser.add_argument('--save_path', type=str, default=None,
+                       help='Path to save results')
     
     args = parser.parse_args()
-    
-    # Set default output files if not provided
-    if args.save:
-        print(f'Saving output file')
-        args.output_file = f"amq/sensitivity/{args.model_name}_dataset_{args.dataset}_n_sample_{args.n_sample}_seqlen_{args.seqlen}.json"
     
     results = linear_sensitivity(args)
     print("Sensitivity analysis completed successfully")
 
     # Save results to JSON file
-    if args.save:
-        with open(args.output_file, 'w') as f:
-            json.dump(results, f, indent=2)
+    with open(f'{args.save_path}.json', 'w') as f:
+        json.dump(results, f, indent=2)
+    print(f"Results saved to {args.save_path}.json")
 
 if __name__ == '__main__':
     main()
