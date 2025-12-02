@@ -160,11 +160,28 @@ See the [LICENSE](LICENSE) file for details.
 If you use this work in your research, please cite:
 
 ```bibtex
-@article{nsgaquant2024,
-  title={NSGAQuant: Automated Mixed-precision Quantization for Large Language Models},
-  author={NSGAQuant Team},
-  year={2024}
+@inproceedings{lee-etal-2025-amq,
+    title = "{AMQ}: Enabling {A}uto{ML} for Mixed-precision Weight-Only Quantization of Large Language Models",
+    author = "Lee, Sangjun  and
+      Woo, Seung-taek  and
+      Jin, Jun-gyu  and
+      Lee, Changhun  and
+      Park, Eunhyeok",
+    editor = "Christodoulopoulos, Christos  and
+      Chakraborty, Tanmoy  and
+      Rose, Carolyn  and
+      Peng, Violet",
+    booktitle = "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing",
+    month = nov,
+    year = "2025",
+    address = "Suzhou, China",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.emnlp-main.1799/",
+    doi = "10.18653/v1/2025.emnlp-main.1799",
+    pages = "35520--35538",
+    ISBN = "979-8-89176-332-6",
 }
+
 ```
 
 ## Contributing
