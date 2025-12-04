@@ -98,8 +98,8 @@ def add_search_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     # General parameters
     group.add_argument('--save_iter', type=int, default=1,
                        help='Save results every n iterations')
-    group.add_argument('--result_file', type=str, default='results.txt',
-                       help='File name to save results')
+    # group.add_argument('--result_file', type=str, default='results.json',
+                    #    help='File name to save results')
     group.add_argument('--resume_path', type=str, default=None,
                        help='Path to resume search from checkpoint')
     
@@ -121,6 +121,19 @@ def add_data_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     
     return parser
 
+def add_eval_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    """Add evaluation-related arguments"""
+    group = parser.add_argument_group('Evaluation Configuration')
+    
+    group.add_argument('--eval_dataset', type=str, nargs='+', default=['wikitext2'],
+                       help='Datasets for evaluation')
+    group.add_argument('--eval_seqlen', type=int, default=2048,
+                       help='Sequence length for evaluation')
+    group.add_argument('--eval_seed', type=int, default=0,
+                       help='Random seed for evaluation')
+    
+    return parser
+
 def parse_args(mode: str = 'search') -> argparse.Namespace:
     """
     Parse arguments based on the mode
@@ -134,12 +147,13 @@ def parse_args(mode: str = 'search') -> argparse.Namespace:
 
     parser = get_base_parser()
     parser = add_model_args(parser)
-    parser = add_data_args(parser)
 
     if mode == 'search':
         parser = add_search_args(parser)
+        parser = add_data_args(parser)
     elif mode == 'quantization':
         parser = add_quantization_args(parser)
+        parser = add_eval_args(parser)
     else:
         raise ValueError(f"Unknown mode: {mode}. Choose from 'search', 'quantization'")
 

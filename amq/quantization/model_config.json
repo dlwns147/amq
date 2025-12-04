@@ -46,7 +46,8 @@
         ],
     "inp_kwargs":[
         "attention_mask",
-        "position_ids"
+        "position_ids",
+        "position_embeddings"
         ]
     },
 "bloom":{

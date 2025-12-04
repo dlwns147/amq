@@ -7,7 +7,7 @@ from utils.dispatch import simple_dispatch_model
 
 import torch
 import numpy as np
-from transformers import AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import set_seed as set_seed_transformers
 from accelerate import Accelerator, InitProcessGroupKwargs
 from hqq.models.hf.base import AutoHQQHFModel
@@ -147,24 +147,6 @@ def get_hfmodel(model_name_or_path: str,
     
     return model
 
-
-# def get_quantization_proxy(model_id, group_size):
-#     quantization_proxies = []
-#     for nbits in [2, 3, 4]:
-#         quant_config = HqqConfig(nbits=nbits, group_size=group_size)
-#         quantization_proxy = AutoModelForCausalLM.from_pretrained(
-#             model_id, 
-#             torch_dtype=torch.float16, 
-#             device_map="auto", 
-#             quantization_config=quant_config
-#         )
-#         quantization_proxy.eval()
-#         quantization_proxy.use_cache = False
-#         quantization_proxy.to(device="cpu")
-#         quantization_proxies.append(quantization_proxy)
-#     return quantization_proxies
-
-
 def get_quantization_proxy(quant_model_paths, device_map):
     clean_up()
 
@@ -196,3 +178,6 @@ def get_quantization_proxy(quant_model_paths, device_map):
     torch.nn.init.normal_ = org_normal
 
     return quantization_proxies
+
+def get_tokenizer(model_id):
+    return AutoTokenizer.from_pretrained(model_id)

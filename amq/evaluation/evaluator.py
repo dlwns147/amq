@@ -5,7 +5,7 @@ import warnings
 warnings.simplefilter("ignore")
 
 from utils.func import get_hfmodel, get_quantization_proxy, get_bits_usage, clean_up, getsubattr, setsubattr, getblock
-from utils.data import get_loader
+from utils.data import get_loader, get_tokenizer
 from utils.eval import eval_loss, eval_ppl, get_logits
 from quantization.model import get_quantized_model
 
@@ -22,6 +22,7 @@ class Evaluator:
                  seqlen=2048,
                  n_sample=128,
                  device_map='auto',
+                 dev='cuda',
                  dtype='auto',
                  search = True,
                  **kwargs):
@@ -30,10 +31,13 @@ class Evaluator:
         self.model = None
         self.device_map = device_map
         self.dtype = dtype
+        self.dev = dev
         self.config = config
         self.seqlen = seqlen
         self.group_size = group_size
         self.search = search
+
+        self.tokenizer = get_tokenizer(model_id)
 
         if self.search:
             self.train_loaders = {dataset: accelerator.prepare(get_loader(dataset, model=model_id, n_sample=n_sample, train=True, seed=seed, seqlen=seqlen)) for dataset in datasets}
@@ -41,6 +45,8 @@ class Evaluator:
         
             print(f'Obtaining dense logits')
             model = get_hfmodel(model_id, dtype=dtype, device_map=device_map)
+            model = model.to(self.dev)
+            model.eval()
             self.dense_logits = {dataset: get_logits(model, loader) for dataset, loader in self.train_loaders.items()}
             del model
             clean_up()
@@ -56,6 +62,8 @@ class Evaluator:
 
             print(f'Loading model')
             self.model = get_hfmodel(model_id, dtype=dtype, device_map=device_map)
+            self.model = self.model.to(self.dev)
+            self.model.eval()
             clean_up()
 
         accelerator.wait_for_everyone()
@@ -73,7 +81,8 @@ class Evaluator:
                         raise NotImplementedError(f'{linear}: {bits} is not available')
         else:
             # TODO: Implement Quantization method(AWQ, GPTQ, OWQ)
-            self.model = get_quantized_model(self.model, method, arch, get_bits_usage(arch, self.config, self.group_size), self.group_size, self.config, self.dev)
+            self.model = get_quantized_model(self.model, self.tokenizer, method, arch, get_bits_usage(arch, self.config, self.group_size), self.group_size, self.config, self.dev)
+            self.model = self.model.to(self.dev)
             self.model.eval()
             self.model.config_use_cache = False
 

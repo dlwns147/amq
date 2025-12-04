@@ -11,11 +11,10 @@ METHOD = {
     'owq': OWQ
 }
 
-def get_quantized_model(model, method, arch, avg_bits, group_size=128, config=None, dev='cuda', **kwargs):
-    method = METHOD[method](model=model, config=config, group_size=group_size, dev=dev, arch=arch, **kwargs)    
+def get_quantized_model(model, tokenizer, method, arch, avg_bits, group_size=128, config=None, dev='cuda', **kwargs):
+    method = METHOD[method](model=model, tokenizer=tokenizer, method=method, arch=arch, avg_bits=avg_bits, group_size=group_size, config=config, dev=dev, **kwargs)    
     method.run()
 
-    del method
     clean_up()
 
     return model

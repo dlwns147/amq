@@ -66,25 +66,24 @@ def run_quantization(args, config):
     - Evaluate the quantized architectures
     """
     
-    set_seed(args.seed)
+    set_seed(args.eval_seed)
 
     accelerator, device_map = init_accelerator(args.gpu_id, config)
     accelerator.print("=== Running Mixed-Precision Quantization ===")
     accelerator.print(args)
     
     with open(args.load, 'r') as f:
-        result_json = json.load(f)
+        result_json = json.load(f)  
         archive = result_json['archive'] + result_json['candidates']
 
     architecture_list, metric_list, bit_usage_list = [v[0] for v in archive], list(map(float, [v[1] for v in archive])), list(map(float, [v[2] for v in archive]))
     sort_idx = np.argsort(metric_list)
     metric_bits_stack = np.column_stack((metric_list, bit_usage_list))[sort_idx, :]
-    bit_usage_min, bit_usage_max = 2 + (32 / args.group_size), 4 + (32 / args.group_size)
-    import code; code.interact('amq_quantization.py line 85', local=dict(globals(), **locals()))
+    # bit_usage_min, bit_usage_max = 2 + (32 / args.group_size), 4 + (32 / args.group_size)
 
     flag = np.ones((metric_bits_stack.shape[0]), dtype=bool)
-    flag = np.logical_and(flag, metric_bits_stack[:, 1] > args.target_bits - args.target_bits_offset,
-                         metric_bits_stack[:, 1] < args.target_bits + args.target_bits_offset)
+    flag = np.logical_and(flag, np.logical_and(metric_bits_stack[:, 1] > (args.target_bits - args.target_bits_offset),
+                         metric_bits_stack[:, 1] < (args.target_bits + args.target_bits_offset)))
     range_idx = np.argwhere(flag).flatten()
     
     filtered_metric_bits_stack = metric_bits_stack[range_idx, :]
@@ -95,9 +94,7 @@ def run_quantization(args, config):
     I = ASF().do(filtered_metric_bits_stack, weights).argsort()[:args.num_of_candidates].reshape(args.num_of_candidates)
 
     for idx in I:
-        print(f'Selected arch[{idx}] \
-            bit-usage: {filtered_metric_bits_stack[idx, 1].item():.4f}, \
-            loss: {filtered_metric_bits_stack[idx, 0].item():.4f}')
+        print(f'Selected arch[{idx}], bit-usage: {filtered_metric_bits_stack[idx, 1].item():.4f}, loss: {filtered_metric_bits_stack[idx, 0].item():.4f}')
 
     model_id = f'{args.model_path}/{args.model_name}'
     assert args.method in ['awq', 'gptq', 'owq'], f'Invalid method: {args.method}'
@@ -107,23 +104,38 @@ def run_quantization(args, config):
         accelerator=accelerator,
         model_id=model_id,
         group_size=args.group_size,
-        seqlen=args.seqlen,
-        datasets=[args.dataset],
+        seqlen=args.eval_seqlen,
+        datasets=args.eval_dataset,
         device_map=device_map,
+        search=False,
     )
 
+    results = []
+
     for idx in tqdm(I, desc='Quantizing architectures & Evaluating'):
+        result = {}
         arch = filtered_architecture_list[idx]
+
+        result['arch'] = arch
+        result['method'] = args.method
+
         accelerator.print(arch)
 
         evaluator.sample(arch, method=args.method)
         ppl, bits_usage = evaluator.eval(accelerator=accelerator, architecture=arch)
 
+        bits_usage = bits_usage + 0.1 if args.method == 'owq' else bits_usage
+
+        result['ppl'] = ppl
+        result['loss'] = filtered_metric_bits_stack[idx, 0]
+        result['bits_usage'] = bits_usage
+
         print(f'Selected arch[{idx}] \n \
-            ppl: {[p for p in ppl.values()]}, \n \
+            ppl: {ppl}, \n \
             loss: {filtered_metric_bits_stack[idx, 0]:.4f} \n \
             bits_usage: {bits_usage:.4f} \n')
-
+            
+        results.append(result)
 
         # TODO: 추후 구현
         # if args.zeroshot:
@@ -151,15 +163,11 @@ def run_quantization(args, config):
         #     #     else:
         #     #         print(f'{task} acc : {task_result["acc,none"]}')
 
-        os.makedirs(args.save, exist_ok=True)
-        with open(os.path.join(args.save, args.results_csv_file), 'w') as f:
-            writer = csv.writer(f)
-            for c in args.comp_obj:
-                writer.writerow(comp_list[c])
-            for d in args.datasets:
-                writer.writerow(metric_list[d])
+    os.makedirs(args.save_path, exist_ok=True)
+    with open(os.path.join(args.save_path, f'{args.method}_results.json'), 'w') as f:
+        json.dump(results, f, ensure_ascii=False, indent=4)
 
-        clean_up()
+    clean_up()
 
     print(args)
     return

@@ -37,6 +37,3 @@ def append_str_prefix(x, prefix):
         return [append_str_prefix(y, prefix) for y in x]
     else:
         return x
-    
-def is_owq(n_bit):
-    return round(n_bit) != n_bit

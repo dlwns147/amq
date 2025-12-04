@@ -8,13 +8,9 @@ from transformers.models.llama.modeling_llama import LlamaDecoderLayer, LlamaRMS
 from transformers.models.qwen2.modeling_qwen2 import Qwen2DecoderLayer, Qwen2RMSNorm
 from transformers.models.mistral.modeling_mistral import MistralDecoderLayer, MistralRMSNorm
 from transformers.activations import GELUActivation
-from amq.model.skip_llama import LlamaDecoderSkipLayer
 
 from .qmodule import ScaledActivation
-from .module import get_op_by_name, get_op_name, set_op_by_name, is_owq
-
-# __all__ = ["auto_scale_block", "apply_scale"]
-
+from .module import get_op_by_name, get_op_name, set_op_by_name
 
 @torch.no_grad()
 def get_weight_scale(weight, q_group_size=-1):
@@ -57,11 +53,9 @@ def scale_ln_fcs(ln, fcs, scales):
 def scale_fc_fc(fc1, fc2, scales):
     assert isinstance(fc1, nn.Linear)
     assert isinstance(fc2, nn.Linear)
-    # assert fc1.out_features == fc2.in_features
 
     scales = scales.to(fc1.weight.device)
 
-    # fc1.weight.div_(scales.view(-1, 1))
     fc1.weight[-scales.size(0) :].div_(scales.view(-1, 1))
     if fc1.bias is not None:
         fc1.bias.div_(scales.view(-1))
@@ -86,11 +80,10 @@ def scale_gelu_fc(gelu, fc, scales):
 
 
 @torch.no_grad()
-def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module_bit=None, outlier=None):
+def auto_scale_block(module, module_kwargs, q_config, input_feat, module_bit=None):
     from .quantizer import pseudo_quantize_tensor
 
     def w_quantize_func(p, bit=None):
-        assert not is_owq(bit), "bit should be integer"
         return pseudo_quantize_tensor(
             p,
             n_bit=bit,
@@ -100,7 +93,7 @@ def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module
     if "use_cache" in module_kwargs:
         module_kwargs.pop("use_cache")
 
-    def _search_module_scale_per_linear(block, linears2scale: dict, x, kwargs={}, do_owq=False, module_bit=None, outlier=None):
+    def _search_module_scale_per_linear(block, linears2scale: dict, x, kwargs={}, module_bit=None):
         # w: co, ci
         # x: n, ci
         assert module_bit is not None
@@ -121,25 +114,14 @@ def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module
         n_grid = 20
         history = []
 
-        if do_owq:
-            original = dict()
-            for fc_name, fc in linears2scale.items():
-                if fc_name in outlier:
-                    original[fc_name] = fc.weight.data[:, outlier[fc_name]].detach().clone()
-
         org_sd = {k: v.cpu() for k, v in block.state_dict().items()}
         for ratio in range(n_grid):
             ratio = ratio * 1 / n_grid
             scales = x_max.pow(ratio).clamp(min=1e-4).view(-1)
             scales = scales / (scales.max() * scales.min()).sqrt()
             for fc_name, fc in linears2scale.items():
-                if do_owq and is_owq(module_bit[fc_name]) and fc_name in outlier:
-                    fc.weight.data[:, outlier[fc_name]] = 0
                 fc.weight.mul_(scales.view(1, -1).to(fc.weight.device))
                 fc.weight.data = w_quantize_func(fc.weight.data, bit=int(module_bit[fc_name])) / (scales.view(1, -1))
-                if do_owq and is_owq(module_bit[fc_name]) and fc_name in outlier:
-                    fc.weight[:, outlier[fc_name]] = original[fc_name]
-
             out = block(x, **kwargs)
             if isinstance(out, tuple):
                 out = out[0]
@@ -160,22 +142,17 @@ def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module
         # print(best_ratio)
         best_scales = best_scales.view(-1)
 
-        if do_owq:
-            del original
-            torch.cuda.empty_cache()
-            gc.collect()
-
         assert torch.isnan(best_scales).sum() == 0, best_scales
         return best_scales.detach()
 
 
-    def _auto_get_scale(prev_op, layers, inp, module2inspect=None, kwargs={}, module_bit=None, do_owq=False, outlier=None):
+    def _auto_get_scale(prev_op, layers, inp, module2inspect=None, kwargs={}, module_bit=None):
         # module2inspect: if given, we will check the output diff of this module instead of layers
         if module2inspect is None:
             assert len(layers) == 1
             module2inspect = list(layers.values())[0]
 
-        scales = _search_module_scale_per_linear(module2inspect, layers, inp, kwargs, module_bit=module_bit, do_owq=do_owq, outlier=outlier)
+        scales = _search_module_scale_per_linear(module2inspect, layers, inp, kwargs, module_bit=module_bit)
         scales = scales.detach().cpu()
         # prev_op_name, [layer_name], scale
         return (
@@ -186,17 +163,12 @@ def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module
 
     scales_list = []  # return the searched scales
 
-    if isinstance(module, LlamaDecoderLayer) or isinstance(module, LlamaDecoderSkipLayer):
+    if isinstance(module, LlamaDecoderLayer):
         if isinstance(module, LlamaDecoderLayer) or module.attn_skipped is False:
             # attention input
             scales_list.append(
                 _auto_get_scale(
                     prev_op=module.input_layernorm, 
-                    # layers=[
-                    #     module.self_attn.q_proj,
-                    #     module.self_attn.k_proj,
-                    #     module.self_attn.v_proj,
-                    # ],
                     layers={
                         'self_attn.q_proj': module.self_attn.q_proj,
                         'self_attn.k_proj': module.self_attn.k_proj,
@@ -206,8 +178,6 @@ def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module
                     module2inspect=module.self_attn,
                     kwargs=module_kwargs,
                     module_bit=module_bit,
-                    do_owq=do_owq,
-                    outlier=outlier,
                 )
             )
             # attn out
@@ -216,14 +186,11 @@ def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module
                 scales_list.append(
                     _auto_get_scale(
                         prev_op=module.self_attn.v_proj,
-                        # layers=[module.self_attn.o_proj],
                         layers={
                             'self_attn.o_proj': module.self_attn.o_proj,
                         },
                         inp=input_feat["self_attn.o_proj"],
                         module_bit=module_bit,
-                        do_owq=False,
-                        # outlier=outlier,
                     )
                 )
         if isinstance(module, LlamaDecoderLayer) or module.mlp_skipped is False:
@@ -231,7 +198,6 @@ def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module
             scales_list.append(
                 _auto_get_scale(
                     prev_op=module.post_attention_layernorm,
-                    # layers=[module.mlp.gate_proj, module.mlp.up_proj],
                     layers={
                         'mlp.gate_proj': module.mlp.gate_proj,
                         'mlp.up_proj': module.mlp.up_proj,
@@ -239,22 +205,17 @@ def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module
                     inp=input_feat["mlp.gate_proj"],
                     module2inspect=module.mlp,
                     module_bit=module_bit,
-                    do_owq=do_owq,
-                    outlier=outlier,
                 )
             )
             # fc2
             scales_list.append(
                 _auto_get_scale(
                     prev_op=module.mlp.up_proj,
-                    # layers=[module.mlp.down_proj],
                     layers={
                         'mlp.down_proj': module.mlp.down_proj,
                     },
                     inp=input_feat["mlp.down_proj"],
                     module_bit=module_bit,
-                    do_owq=do_owq,
-                    outlier=outlier,
                 )
             )
     
@@ -263,11 +224,6 @@ def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module
         scales_list.append(
             _auto_get_scale(
                 prev_op=module.input_layernorm, 
-                # layers=[
-                #     module.self_attn.q_proj,
-                #     module.self_attn.k_proj,
-                #     module.self_attn.v_proj,
-                # ],
                 layers={
                     'self_attn.q_proj': module.self_attn.q_proj,
                     'self_attn.k_proj': module.self_attn.k_proj,
@@ -277,8 +233,6 @@ def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module
                 module2inspect=module.self_attn,
                 kwargs=module_kwargs,
                 module_bit=module_bit,
-                do_owq=do_owq,
-                outlier=outlier,
             )
         )
         # attn out
@@ -287,21 +241,17 @@ def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module
             scales_list.append(
                 _auto_get_scale(
                     prev_op=module.self_attn.v_proj,
-                    # layers=[module.self_attn.o_proj],
                     layers={
                         'self_attn.o_proj': module.self_attn.o_proj,
                     },
                     inp=input_feat["self_attn.o_proj"],
                     module_bit=module_bit,
-                    do_owq=False,
-                    # outlier=outlier,
                 )
             )
         # fc1
         scales_list.append(
             _auto_get_scale(
                 prev_op=module.post_attention_layernorm,
-                # layers=[module.mlp.gate_proj, module.mlp.up_proj],
                 layers={
                     'mlp.gate_proj': module.mlp.gate_proj,
                     'mlp.up_proj': module.mlp.up_proj,
@@ -309,22 +259,17 @@ def auto_scale_block(module, module_kwargs, q_config, input_feat, do_owq, module
                 inp=input_feat["mlp.gate_proj"],
                 module2inspect=module.mlp,
                 module_bit=module_bit,
-                do_owq=do_owq,
-                outlier=outlier,
             )
         )
         # fc2
         scales_list.append(
             _auto_get_scale(
                 prev_op=module.mlp.up_proj,
-                # layers=[module.mlp.down_proj],
                 layers={
                     'mlp.down_proj': module.mlp.down_proj,
                 },
                 inp=input_feat["mlp.down_proj"],
                 module_bit=module_bit,
-                do_owq=do_owq,
-                outlier=outlier,
             )
         )
 

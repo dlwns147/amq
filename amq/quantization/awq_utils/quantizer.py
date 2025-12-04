@@ -121,7 +121,6 @@ def pseudo_quantize_model_weight(
             m.weight.data = pseudo_quantize_tensor(
                 m.weight.data, n_bit=int(arch['linear'][n][i]), **q_config
             )
-            # m.cpu()
 
 
 @torch.no_grad()
@@ -152,8 +151,6 @@ def real_quantize_model_weight(model, w_bit, q_config, init_only=False):
                 module.weight.data, scales, zeros = pseudo_quantize_tensor(
                     module.weight.data, n_bit=w_bit, get_scale_zp=True, **q_config
                 )
-                # scales = scales.t().contiguous()
-                # zeros = zeros.t().contiguous()
                 q_linear = WQLinear.from_linear(
                     module, w_bit, q_config["q_group_size"], False, scales, zeros
                 )

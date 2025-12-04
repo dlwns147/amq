@@ -19,8 +19,8 @@ def quantize(x, scale, zero, maxq):
 
 
 class GPTQ(BASE):
-    def __init__(self, model, method, avg_bits, arch, group_size=128, dev='cuda', **kwargs):
-        super().__init__(model, method, avg_bits, arch, group_size=group_size, dev=dev)
+    def __init__(self, model, tokenizer, method, arch, avg_bits, group_size=128, config=None, dev='cuda', **kwargs):
+        super().__init__(model=model, tokenizer=tokenizer, method=method, arch=arch, avg_bits=avg_bits, group_size=group_size, config=config, dev=dev)
         self.method = 'gptq'
 
     @torch.no_grad
@@ -67,7 +67,10 @@ class GPTQ(BASE):
                 inps[cache['i']] = inp
                 cache['i'] += 1
                 cache['attention_mask'] = kwargs['attention_mask']
-                cache['position_ids'] = kwargs['position_ids']
+                if 'position_embeddings' in kwargs:
+                    cache['position_embeddings'] = kwargs['position_embeddings']
+                if 'position_ids' in kwargs:
+                    cache['position_ids'] = kwargs['position_ids']
                 raise ValueError
         layers[0] = Catcher(layers[0])
         for batch in samples:
@@ -85,8 +88,8 @@ class GPTQ(BASE):
         torch.cuda.empty_cache()
 
         outs = torch.zeros_like(inps)
-        attention_mask = cache['attention_mask']
-        position_ids = cache['position_ids']
+        del cache['i']
+        inp_kwargs = cache
 
         print('Ready.')
 
@@ -127,13 +130,14 @@ class GPTQ(BASE):
                 for name in subset:
                     handles.append(subset[name].register_forward_hook(add_batch(name)))
                 for j in range(nsamples):
-                    outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask, position_ids=position_ids)[0]
+                    # outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask, position_ids=position_ids)[0]
+                    # outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask)[0]
+                    outs[j] = layer(inps[j].unsqueeze(0), **inp_kwargs)[0]
                 for h in handles:
                     h.remove()
 
                 for name in subset:
-                    print(i, name)
-                    print('Quantizing ...')
+                    print(f'Quantizing {i}:{name}')
                     # gptq[name].fasterquant(
                     #     percdamp=args.percdamp, groupsize=args.groupsize, actorder=args.act_order, static_groups=args.static_groups
                     # )
@@ -144,7 +148,7 @@ class GPTQ(BASE):
                     gptq[name].free()
 
             for j in range(nsamples):
-                outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask, position_ids=position_ids)[0]
+                outs[j] = layer(inps[j].unsqueeze(0), **inp_kwargs)[0]
             # outs = layer(inps, attention_mask=attention_mask, position_ids=position_ids)[0]
 
             layers[i] = layer.cpu()

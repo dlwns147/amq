@@ -72,4 +72,4 @@ def eval_ppl(model, accelerator, loader, seqlen=2048):
     ppls = torch.stack(accelerator.gather_for_metrics(ppls)).flatten()
     ppl = torch.exp(ppls.sum() / (len(ppls) * seqlen))
     
-    return ppl
+    return ppl.item()

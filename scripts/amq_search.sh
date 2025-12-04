@@ -38,7 +38,7 @@ SEQLEN=2048
 SEED=0
 
 ## Base Args
-SAVE_PATH=amq/results/${TODAY}_${MODEL_NAME}_dataset_${DATASET}
+SAVE_PATH=amq/results/search/${TODAY}_${MODEL_NAME}_dataset_${DATASET}
 GPU_ID=${CUDA_VISIBLE_DEVICES}
 
 args=(

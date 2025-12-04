@@ -54,8 +54,8 @@ def processing_meta(model_name):
 
 
 class OWQ(BASE):
-    def __init__(self, model, method, avg_bits, arch, group_size=128, dev='cuda', **kwargs):
-        super().__init__(model, method, avg_bits, arch, group_size=group_size, dev=dev)
+    def __init__(self, model, tokenizer, method, arch, avg_bits, group_size=128, config=None, dev='cuda', **kwargs):
+        super().__init__(model=model, tokenizer=tokenizer, method=method, arch=arch, avg_bits=avg_bits, group_size=group_size, config=config, dev=dev)
         self.method = 'owq'
 
     @torch.no_grad
@@ -79,7 +79,7 @@ class OWQ(BASE):
         print('Running OWQ...')
 
         if self.group_size > 0:
-            self.avg_bit -= 32 / self.group_size        ## OWQ 연산 방식에서 avg_bit로 연산하기 때문에 group_size로 추가되는 비트를 제거
+            self.avg_bits -= 32 / self.group_size        ## OWQ 연산 방식에서 avg_bit로 연산하기 때문에 group_size로 추가되는 비트를 제거
         
         model_name = self.model.model.config.name_or_path.lower()
         meta = processing_meta(model_name)
@@ -165,7 +165,7 @@ class OWQ(BASE):
         ratios = meta['ratios']
         n_out_dict = {l:0 for l in owq_layers.keys()}
         n_owq_layers = sum(owq_layers.values())
-        r = (12 / (16 - self.avg_bit)) * 0.1
+        r = (12 / (16 - self.avg_bits)) * 0.1
         r /= n_owq_layers
         layer = self.get_named_linears(layers[0])
 

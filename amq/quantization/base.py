@@ -103,20 +103,17 @@ def get_owq_calib_dataset(data="c4", tokenizer=None, n_samples=128, seed=0, seql
     return trainloader
 
 class BASE:
-    def __init__(self, model, method, avg_bits, arch, group_size=128, dev='cuda', **kwargs):
+    def __init__(self, model, tokenizer, method, arch, avg_bits, group_size=128, config=None, dev='cuda', **kwargs):
         self.model = model
+        self.tokenizer = tokenizer
         self.method = method
-        self.avg_bits = avg_bits
         self.arch = arch
+        self.avg_bits = avg_bits
         self.group_size = group_size
+        self.config = config
         self.dev = dev
         
-        print(f'Quantization options: \n \
-                method: {method}, \n \
-                arch: {arch}, \n \
-                avg_bits: {avg_bits:.4f}, \n \
-                group_size: {group_size}, \n \
-                dev: {dev}')
+        print(f'Quantization options: method: {self.method}, arch: {self.arch}, avg_bits: {self.avg_bits:.4f}, group_size: {self.group_size}, config: {self.config}, dev: {self.dev}')
 
     def append_str_prefix(self, x, prefix):
         if isinstance(x, str):

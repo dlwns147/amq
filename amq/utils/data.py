@@ -9,26 +9,11 @@ class TokenizerWrapper:
         self.input_ids = input_ids
 
 def get_tokenizer(model, cache_dir=None):
-    # if "llama" in model.lower():
-    #     tokenizer = LlamaTokenizer.from_pretrained(model, use_fast=False, cache_dir=cache_dir)
-    #     # fix for transformer 4.28.0.dev0 compatibility
-    #     if tokenizer.bos_token_id != 1 or tokenizer.eos_token_id != 2:
-    #         try:
-    #             tokenizer.bos_token_id = 1
-    #             tokenizer.eos_token_id = 2
-    #         except AttributeError:
-    #             pass
-    # else:
-    #     tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False, cache_dir=cache_dir)
     tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False, cache_dir=cache_dir)
     return tokenizer
 
 def get_wikitext2(tokenizer, seqlen=2048, batch_size=1, cache_dir=None):
-    
-    # traindata = load_dataset('wikitext', 'wikitext-2-raw-v1', split='train', cache_dir=cache_dir)
     testdata = load_dataset('wikitext', 'wikitext-2-raw-v1', split='test', cache_dir=cache_dir)
-
-    # trainenc = tokenizer(" ".join(traindata['text']), return_tensors='pt')
     testenc = tokenizer("\n\n".join(testdata['text']), return_tensors='pt').input_ids
     n_sample = testenc.numel() // seqlen
     testenc = testenc[:, :n_sample * seqlen].reshape(n_sample, seqlen)
