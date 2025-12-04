@@ -35,15 +35,19 @@ def add_quantization_args(parser: argparse.ArgumentParser) -> argparse.ArgumentP
     group = parser.add_argument_group('Quantization Configuration')
     
     # Quantization method parameters
-    group.add_argument('--method', type=str, default='hqq',
-                       choices=['awq', 'gptq', 'hqq'],
+    group.add_argument('--method', type=str, default='awq',
+                       choices=['awq', 'gptq', 'owq'],
                        help='Quantization method(s) to use')
     group.add_argument('--group_size', type=int, default=128,
                        help='Group size for quantization (128 for per-channel)')
 
     # Candidates Selection parameters
+    group.add_argument('--num_of_candidates', type=int, default=1,
+                       help='Number of candidates to select')
     group.add_argument('--target_bits', type=float, default=3.0,
                        help='Target bit-width')
+    group.add_argument('--target_bits_offset', type=float, default=0.005,
+                       help='Offset for target bit-width')
 
     # General parameters
     group.add_argument('--load', type=str, default=None,

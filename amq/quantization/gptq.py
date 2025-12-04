@@ -11,9 +11,6 @@ from accelerate import dispatch_model
 
 DEBUG = False
 
-# torch.backends.cuda.matmul.allow_tf32 = False
-# torch.backends.cudnn.allow_tf32 = False
-
 def quantize(x, scale, zero, maxq):
     if maxq < 0:
         return (x > scale / 2).float() * scale + (x < zero / 2).float() * zero
@@ -22,27 +19,23 @@ def quantize(x, scale, zero, maxq):
 
 
 class GPTQ(BASE):
-    def __init__(self, model_name, config, arch, device_map, group_size, dtype='auto', dev='cuda', prune=False, do_owq=False, outlier_path=None, **kwargs):
-        super().__init__(model_name, config, arch, device_map=device_map, dtype=dtype, group_size=group_size, dev=dev, prune=prune, do_owq=do_owq, outlier_path=outlier_path)
+    def __init__(self, model, method, avg_bits, arch, group_size=128, dev='cuda', **kwargs):
+        super().__init__(model, method, avg_bits, arch, group_size=group_size, dev=dev)
         self.method = 'gptq'
-
-        if do_owq:
-            print('GPTQ is not supported owq.')
-            exit()
 
     @torch.no_grad
     def run(
         self,
         samples=None,
-        sym=False,
         nsamples=128,
         true_sequential=False,
         percdamp=.01,
         act_order=False,
         static_groups=False,
-        seqlen=2048
+        seqlen=2048,
+        **kwargs
     ):
-        
+        sym = kwargs.get('sym', False)
         assert self.arch is not None, "arch is not provided"
        
         if samples is None:

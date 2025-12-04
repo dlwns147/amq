@@ -6,9 +6,9 @@ from transformers import AutoConfig, AutoModel, AutoTokenizer
 from transformers import AutoModelForCausalLM
 from transformers.models.llama.modeling_llama import LlamaForCausalLM
 from datasets import load_dataset
-from amq.utils.func import load_outlier, clean_up
+from utils.func import clean_up
 
-from amq.model import skip_llama
+from model import skip_llama
 
 def get_awq_calib_dataset(data="pileval", tokenizer=None, n_samples=512, block_size=512):
     if data == "pileval":
@@ -103,85 +103,20 @@ def get_owq_calib_dataset(data="c4", tokenizer=None, n_samples=128, seed=0, seql
     return trainloader
 
 class BASE:
-    def __init__(self, model_name, config, arch, device_map, dtype='auto', dev='cuda', group_size=128, prune=False, do_owq=False, outlier_path=None):
-        self.model_name = model_name
-        self.config = config
-        self.dev = dev
-        self.device_map = device_map
+    def __init__(self, model, method, avg_bits, arch, group_size=128, dev='cuda', **kwargs):
+        self.model = model
+        self.method = method
+        self.avg_bits = avg_bits
         self.arch = arch
-        self.dtype = dtype
-
-        self.prune = prune
-        self.do_owq = do_owq
-        self.outlier = None
         self.group_size = group_size
-        if do_owq:
-            if isinstance(outlier_path, str):
-                self.outlier = torch.load(outlier_path)
-            else:
-                self.outlier = outlier_path
-        self.load_model(device_map='cpu', dtype=dtype)
-        print(f'groupsize : {group_size}')
+        self.dev = dev
         
-    def load_model(self, device_map='auto', dtype='auto', use_cache=False):
-        if hasattr(self, 'model'):
-            del self.model
-            clean_up()
-
-        model_config = AutoConfig.from_pretrained(self.model_name, trust_remote_code=True)
-        model_config.use_cache = use_cache
-        self.model = AutoModelForCausalLM.from_pretrained(self.model_name, 
-                                                        torch_dtype=dtype,
-                                                        device_map=device_map,
-                                                        low_cpu_mem_usage=True,
-                                                        trust_remote_code=True, 
-                                                        config=model_config,
-                                                        )
-        self.model.eval()        
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, trust_remote_code=True, use_fast=False)
-        clean_up()
-
-    def prune_model(self):
-        self.model = skip_llama.block_replace(self.model)
-
-        # "layer": {"self_attn": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
-                    # "mlp": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}
-
-        for block_name in self.arch['layer'].keys():
-            if block_name == 'self_attn':
-                skip_block = skip_llama.skip_attn
-            elif block_name == 'mlp':
-                skip_block = skip_llama.skip_mlp
-
-            for idx, use in enumerate(self.arch['layer'][block_name]):
-                if use == 0:        ## skip the block
-                    skip_block(self.model, idx, reuse=False)
-
-
-    # def get_calib_dataset(self):
-    #     if self.method == 'gptq':
-    #         self.get_gptq_calib_dataset()
-    #     elif self.method == 'awq':
-    #         self.get_awq_calib_dataset()
-
-    
-    # def get_gptq_calib_dataset(self, calib_data='c4', n_samples=128, seqlen=2048, seed=0):
-    #     samples = get_gptq_calib_dataset(
-    #         data=calib_data, tokenizer=self.tokenizer, n_samples=n_samples, seed=seed, seqlen=seqlen
-    #     )
-    #     return samples
-        
-
-    # def get_awq_calib_dataset(self, calib_data='pileval', n_samples=512, block_size=512):
-    #     return get_awq_calib_dataset(
-    #         data=calib_data, tokenizer=self.tokenizer, n_samples=n_samples, block_size=block_size
-    #     )
-    #     # samples = get_awq_calib_dataset(
-    #     #     data=calib_data, tokenizer=self.tokenizer, n_samples=n_samples, block_size=block_size
-    #     # )
-    #     # samples = torch.cat(samples, dim=0)
-    #     # return samples
-
+        print(f'Quantization options: \n \
+                method: {method}, \n \
+                arch: {arch}, \n \
+                avg_bits: {avg_bits:.4f}, \n \
+                group_size: {group_size}, \n \
+                dev: {dev}')
 
     def append_str_prefix(self, x, prefix):
         if isinstance(x, str):
@@ -192,12 +127,6 @@ class BASE:
             return [self.append_str_prefix(y, prefix) for y in x]
         else:
             return x
-    
-
-    @staticmethod
-    def is_owq(n_bit):
-        return round(n_bit) != n_bit
-
 
     @staticmethod
     def get_named_linears(module):

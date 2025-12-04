@@ -13,8 +13,10 @@ CONFIG=amq/configs/llama.json
 ## Quantization Args
 METHOD=awq
 GROUP_SIZE=128
+NUM_OF_CANDIDATES=1
 TARGET_BITS=3.0
-LOAD=amq/results/2511280309_Llama-2-7b-hf_dataset_wikitext2/iter_50.stats
+TARGET_BITS_OFFSET=0.005
+LOAD=amq/results/2511280309_Llama-2-7b-hf_dataset_wikitext2/iter_200.stats
 
 ## Data Args
 DATASET=wikitext2
@@ -30,7 +32,9 @@ args=(
     --config ${CONFIG} \
     --method ${METHOD} \
     --group_size ${GROUP_SIZE} \
+    --num_of_candidates ${NUM_OF_CANDIDATES} \
     --target_bits ${TARGET_BITS} \
+    --target_bits_offset ${TARGET_BITS_OFFSET} \
     --load ${LOAD} \
     --gpu_id ${GPU_ID} \
     --dataset ${DATASET} \

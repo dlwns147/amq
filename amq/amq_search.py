@@ -47,7 +47,7 @@ def run_search(args, config):
     # Run search
     results = engine.search(accelerator)
     
-    accelerator.print(f"Search completed! Results saved to {args.save}")
+    accelerator.print(f"Search completed! Results saved to {args.save_path}")
     
     return results
 

@@ -4,8 +4,6 @@ This is the official repository for **AMQ**, accepted as an **oral paper** at *E
 
 📄 Paper: https://arxiv.org/abs/2509.12019 
 
-### **🚀 The code is constantly being updated.**
-
 AMQ is an automated mixed-precision quantization library for Large Language Models (LLMs). 
 It uses multi-objective optimization to find the optimal balance between model performance and efficiency.
 
