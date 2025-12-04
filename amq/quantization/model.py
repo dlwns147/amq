@@ -12,9 +12,9 @@ METHOD = {
 }
 
 def get_quantized_model(model, tokenizer, method, arch, avg_bits, group_size=128, config=None, dev='cuda', **kwargs):
-    method = METHOD[method](model=model, tokenizer=tokenizer, method=method, arch=arch, avg_bits=avg_bits, group_size=group_size, config=config, dev=dev, **kwargs)    
-    method.run()
+    quantizer = METHOD[method](model=model, tokenizer=tokenizer, method=method, arch=arch, avg_bits=avg_bits, group_size=group_size, config=config, dev=dev, **kwargs)    
+    quantizer.run()
 
     clean_up()
 
-    return model
+    return quantizer.model

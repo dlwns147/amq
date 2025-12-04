@@ -77,6 +77,8 @@ def run_quantization(args, config):
         archive = result_json['archive'] + result_json['candidates']
 
     architecture_list, metric_list, bit_usage_list = [v[0] for v in archive], list(map(float, [v[1] for v in archive])), list(map(float, [v[2] for v in archive]))
+    if args.method == 'owq':
+        bit_usage_list = [bit_usage + 0.1 for bit_usage in bit_usage_list]
     sort_idx = np.argsort(metric_list)
     metric_bits_stack = np.column_stack((metric_list, bit_usage_list))[sort_idx, :]
     # bit_usage_min, bit_usage_max = 2 + (32 / args.group_size), 4 + (32 / args.group_size)
@@ -97,7 +99,7 @@ def run_quantization(args, config):
         print(f'Selected arch[{idx}], bit-usage: {filtered_metric_bits_stack[idx, 1].item():.4f}, loss: {filtered_metric_bits_stack[idx, 0].item():.4f}')
 
     model_id = f'{args.model_path}/{args.model_name}'
-    assert args.method in ['awq', 'gptq', 'owq'], f'Invalid method: {args.method}'
+    assert args.method in ['fp16', 'awq', 'gptq', 'owq'], f'Invalid method: {args.method}'
     
     evaluator = Evaluator(
         config=config,
@@ -121,10 +123,9 @@ def run_quantization(args, config):
 
         accelerator.print(arch)
 
-        evaluator.sample(arch, method=args.method)
+        if args.method != 'fp16':
+            evaluator.sample(arch, method=args.method)
         ppl, bits_usage = evaluator.eval(accelerator=accelerator, architecture=arch)
-
-        bits_usage = bits_usage + 0.1 if args.method == 'owq' else bits_usage
 
         result['ppl'] = ppl
         result['loss'] = filtered_metric_bits_stack[idx, 0]

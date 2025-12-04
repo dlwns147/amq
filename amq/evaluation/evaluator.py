@@ -44,7 +44,7 @@ class Evaluator:
             self.dense_logits = {dataset: None for dataset in self.train_loaders.keys()}
         
             print(f'Obtaining dense logits')
-            model = get_hfmodel(model_id, dtype=dtype, device_map=device_map)
+            model = get_hfmodel(self.model_id, dtype=self.dtype, device_map=self.device_map)
             model = model.to(self.dev)
             model.eval()
             self.dense_logits = {dataset: get_logits(model, loader) for dataset, loader in self.train_loaders.items()}
@@ -61,7 +61,7 @@ class Evaluator:
             self.test_loaders = {dataset: accelerator.prepare(get_loader(dataset, model=model_id, train=False, seqlen=seqlen)) for dataset in datasets}
 
             print(f'Loading model')
-            self.model = get_hfmodel(model_id, dtype=dtype, device_map=device_map)
+            self.model = get_hfmodel(self.model_id, dtype=self.dtype, device_map=self.device_map)
             self.model = self.model.to(self.dev)
             self.model.eval()
             clean_up()
@@ -81,7 +81,7 @@ class Evaluator:
                         raise NotImplementedError(f'{linear}: {bits} is not available')
         else:
             # TODO: Implement Quantization method(AWQ, GPTQ, OWQ)
-            self.model = get_quantized_model(self.model, self.tokenizer, method, arch, get_bits_usage(arch, self.config, self.group_size), self.group_size, self.config, self.dev)
+            self.model = get_quantized_model(self.model, self.tokenizer, method, arch, get_bits_usage(arch, self.config, self.group_size), self.group_size, self.config, self.dev, device_map=self.device_map)
             self.model = self.model.to(self.dev)
             self.model.eval()
             self.model.config_use_cache = False

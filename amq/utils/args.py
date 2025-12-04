@@ -36,7 +36,7 @@ def add_quantization_args(parser: argparse.ArgumentParser) -> argparse.ArgumentP
     
     # Quantization method parameters
     group.add_argument('--method', type=str, default='awq',
-                       choices=['awq', 'gptq', 'owq'],
+                       choices=['fp16', 'awq', 'gptq', 'owq'],
                        help='Quantization method(s) to use')
     group.add_argument('--group_size', type=int, default=128,
                        help='Group size for quantization (128 for per-channel)')
