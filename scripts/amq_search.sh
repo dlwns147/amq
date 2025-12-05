@@ -9,7 +9,7 @@ PORT_NUM=$(( ( RANDOM % 10000 )  + 10000 ))
 MODEL_PATH=meta-llama
 MODEL_NAME=Llama-2-7b-hf
 CONFIG=amq/configs/llama.json
-QUANTIZATION_PROXY_PATHS=("/SSD/Woo/hqq/Llama-2-7b-hf_2bit_128gs_1axis" "/SSD/Woo/hqq/Llama-2-7b-hf_3bit_128gs_1axis" "/SSD/Woo/hqq/Llama-2-7b-hf_4bit_128gs_1axis")
+QUANTIZATION_PROXY_PATHS=("/SSD/hqq/Llama-2-7b-hf_2bit_128gs_1axis" "/SSD/hqq/Llama-2-7b-hf_3bit_128gs_1axis" "/SSD/hqq/Llama-2-7b-hf_4bit_128gs_1axis")
 
 ## Search Args
 SENSITIVITY_THRESHOLD=2.0

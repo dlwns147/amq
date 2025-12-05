@@ -3,7 +3,7 @@ CUDA_VISIBLE_DEVICES=${1}
 ## Model Args
 MODEL_PATH=meta-llama
 MODEL_NAME=Llama-2-7b-hf
-QUANTIZATION_PROXY_PATHS=("/SSD/Woo/hqq/Llama-2-7b-hf_2bit_128gs_1axis" "/SSD/Woo/hqq/Llama-2-7b-hf_3bit_128gs_1axis" "/SSD/Woo/hqq/Llama-2-7b-hf_4bit_128gs_1axis")
+QUANTIZATION_PROXY_PATHS=("/SSD/hqq/Llama-2-7b-hf_2bit_128gs_1axis" "/SSD/hqq/Llama-2-7b-hf_3bit_128gs_1axis" "/SSD/hqq/Llama-2-7b-hf_4bit_128gs_1axis")
 GPU_ID=${CUDA_VISIBLE_DEVICES}
 
 ## Data Args
