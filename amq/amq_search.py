@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 AMQ: Automated Mixed-precision Quantization
 
@@ -7,11 +6,6 @@ Main entry point for AMQ operations:
 2. Quantization Proxy - Use quantization proxies for efficient evaluation
 3. Quality Predictor - Predict model quality with surrogate models
 4. Iterative Search and Update - Refine configurations through multi-objective search
-
-Usage:
-    python -m amq search --model_name Llama-2-7b-hf --config configs/llama.json ...
-    python -m amq sensitivity --model_name Llama-2-7b-hf --config configs/llama.json ...
-    python -m amq evaluate --expr path/to/results ...
 """
 
 import os

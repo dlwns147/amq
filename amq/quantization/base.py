@@ -2,13 +2,7 @@ import random
 
 import torch
 import torch.nn as nn
-from transformers import AutoConfig, AutoModel, AutoTokenizer
-from transformers import AutoModelForCausalLM
-from transformers.models.llama.modeling_llama import LlamaForCausalLM
 from datasets import load_dataset
-from utils.func import clean_up
-
-from model import skip_llama
 
 def get_awq_calib_dataset(data="pileval", tokenizer=None, n_samples=512, block_size=512):
     if data == "pileval":

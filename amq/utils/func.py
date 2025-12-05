@@ -1,15 +1,16 @@
 import gc
 import random
-
 from datetime import timedelta
-
-from utils.dispatch import simple_dispatch_model
 
 import torch
 import numpy as np
+import scipy.stats as stats
+
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import set_seed as set_seed_transformers
 from accelerate import Accelerator, InitProcessGroupKwargs
+
+from utils.dispatch import simple_dispatch_model
 from hqq.models.hf.base import AutoHQQHFModel
 
 def clean_up():
@@ -56,6 +57,13 @@ def hassubattr(obj, attr):
 
 def getblock(model, config):
     return getsubattr(model, config['layers'])
+
+def get_correlation(prediction, target):
+    rmse = np.sqrt(((prediction - target) ** 2).mean())
+    rho, _ = stats.spearmanr(prediction, target)
+    tau, _ = stats.kendalltau(prediction, target)
+
+    return rmse, rho, tau
 
 def init_accelerator(gpu_id, config):
     gpu_id = gpu_id.split(',')

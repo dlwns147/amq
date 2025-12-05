@@ -18,6 +18,7 @@ from search.space import SearchSpace
 from search.problem import AuxiliarySingleLevelProblem, SubsetProblem
 from predictor.factory import get_predictor
 from utils.ga import MySampling, BinaryCrossover, MyMutation, IntMutation
+from utils.func import get_correlation
 
 class Search:
     def __init__(self, args, config, accelerator, device_map):
@@ -142,7 +143,7 @@ class Search:
 
             if accelerator.is_main_process:
                 # check for accuracy predictor's performance
-                rmse, rho, tau = self._get_correlation(
+                rmse, rho, tau = get_correlation(
                     np.vstack((archive_pred, candidate_pred)), np.array([x[1] for x in archive] + candidate_metric_list))
 
                 # add to archive
@@ -304,10 +305,3 @@ class Search:
         if normalized:
             hv = hv / np.prod(ref_point)
         return hv
-
-    def _get_correlation(self, prediction, target):
-        rmse = np.sqrt(((prediction - target) ** 2).mean())
-        rho, _ = stats.spearmanr(prediction, target)
-        tau, _ = stats.kendalltau(prediction, target)
-
-        return rmse, rho, tau

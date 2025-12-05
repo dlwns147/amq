@@ -1,13 +1,11 @@
 import math
 import time
 
-from .base import BASE, get_gptq_calib_dataset
-
 import torch
 import torch.nn as nn
-import numpy as np
 import transformers
-from accelerate import dispatch_model
+
+from .base import BASE, get_gptq_calib_dataset
 
 DEBUG = False
 

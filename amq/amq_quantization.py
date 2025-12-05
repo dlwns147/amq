@@ -1,9 +1,7 @@
 import os
-import csv
 import json
 from tqdm import tqdm
 
-import torch
 import numpy as np
 
 from pymoo.decomposition.asf import ASF
@@ -13,8 +11,6 @@ from pymoo.util.normalization import normalize
 from evaluation.evaluator import Evaluator
 from utils.args import parse_args
 from utils.func import init_accelerator, clean_up, set_seed
-# from utils.eval import measure_latency, eval_zeroshot
-# from utils.data import get_tokenizer
 
 class HighTradeoffPoints(DecisionMaking):
 
@@ -29,7 +25,6 @@ class HighTradeoffPoints(DecisionMaking):
 
         if self.normalize:
             F = normalize(F, estimate_bounds_if_none=True)
-            # F = normalize(F, self.ideal_point, self.nadir_point, estimate_bounds_if_none=True)
 
         neighbors_finder = NeighborFinder(F, epsilon=0.125, n_min_neigbors="auto", consider_2d=False)
 
@@ -81,7 +76,6 @@ def run_quantization(args, config):
         bit_usage_list = [bit_usage + 0.1 for bit_usage in bit_usage_list]
     sort_idx = np.argsort(metric_list)
     metric_bits_stack = np.column_stack((metric_list, bit_usage_list))[sort_idx, :]
-    # bit_usage_min, bit_usage_max = 2 + (32 / args.group_size), 4 + (32 / args.group_size)
 
     flag = np.ones((metric_bits_stack.shape[0]), dtype=bool)
     flag = np.logical_and(flag, np.logical_and(metric_bits_stack[:, 1] > (args.target_bits - args.target_bits_offset),
@@ -138,32 +132,6 @@ def run_quantization(args, config):
             
         results.append(result)
 
-        # TODO: 추후 구현
-        # if args.zeroshot:
-        #     clean_up()
-        #     evaluator.model.config.use_cache = False
-            
-        #     results = eval_zeroshot(model, tokenizer=get_tokenizer(model_id), task_list=args.tasks, num_fewshot=args.num_fewshot, batch_size=args.zeroshot_batch_size)
-        #     acc_norm = [task_result['acc_norm,none'] if 'acc_norm,none' in task_result else task_result['acc,none'] if 'acc,none' in task_result else 0 for task_result in results.values()]
-        #     acc = [task_result['acc,none'] if 'acc,none' in task_result else 0 for task_result in results.values()]
-        #     em_strict = [task_result['exact_match,strict-match'] if 'exact_match,strict-match' in task_result else 0 for task_result in results.values()]
-        #     em_flexible = [task_result['exact_match,flexible-extract'] if 'exact_match,flexible-extract' in task_result else 0 for task_result in results.values()]
-        #     em = em_strict + em_flexible
-            
-        #     task = list(results.keys())
-        #     avg_acc_norm = np.mean(acc_norm)
-        #     avg_acc = np.mean(acc)
-        #     print(f'avg_acc_norm : {avg_acc_norm}, avg_acc : {avg_acc}')
-        #     print(f'task : {task}')
-        #     print(f'acc_norm : {acc_norm}')
-        #     print(f'em : {em}')
-        #     # print(F'results: {results}')
-        #     # for task, task_result in results.items():
-        #     #     if 'acc_norm,none' in task_result:
-        #     #         print(f'{task} acc_norm : {task_result["acc_norm,none"]}')
-        #     #     else:
-        #     #         print(f'{task} acc : {task_result["acc,none"]}')
-
     os.makedirs(args.save_path, exist_ok=True)
     with open(os.path.join(args.save_path, f'{args.method}_results.json'), 'w') as f:
         json.dump(results, f, ensure_ascii=False, indent=4)
@@ -171,30 +139,6 @@ def run_quantization(args, config):
     clean_up()
 
     print(args)
-    return
-
-    sentences = []
-    for k, v in vars(args).items():
-        sentences.append(f"{k}: {v}\n")
-    sentences.append("\n")
-    for a, c, p in zip(arch_list, complexity_list, ppl_list):
-        sentences.append(f"arch: {a}, bits: {c:.4f}, ppl: {p}\n")
-
-    with open(os.path.join(args.save, args.results_file), 'w') as f:
-        for sentence in sentences:
-            f.write(sentence)
-
-    with open(os.path.join(args.save, args.results_csv_file), 'w') as f:
-        writer = csv.writer(f)
-        writer.writerow(['arch', 'bits', 'params', 'sparsity', 'metric', 'latency'] + args.datasets)
-        for a, b, p, s, m, l, ppl in zip(arch_list, bits_list, param_list, sparsity_list, metric_list, latency_list, ppl_list):
-            writer.writerow([a, b, p, s, m, l] + list(ppl.values()))
-
-    with open(os.path.join(args.save, args.results_arch_file), 'w') as f:
-        json.dump({'archive': [[a, c, p] for a, c, p in zip(arch_list, complexity_list, ppl_list)]}, f, ensure_ascii=False, indent=4)
-
-    return
-
 
 
 def main():
@@ -211,7 +155,6 @@ def main():
     run_quantization(args, config)
 
     return
-
 
 if __name__ == '__main__':
     main()

@@ -8,7 +8,6 @@ import torch.nn as nn
 import transformers
 
 from .base import BASE, get_owq_calib_dataset
-from utils.func import clean_up
 
 DEBUG = False
 
@@ -26,19 +25,8 @@ def processing_meta(model_name):
         metas = json.load(f)
     
     # model config
-    if 'opt' in model_name:
-        meta = metas['opt']
-        if '350m' in model_name:
-            meta['pre_layers'].append('model.model.decoder.project_in')
-            meta['post_layers'].append('model.model.decoder.project_out')
-        else:
-            meta['post_layers'].append('model.model.decoder.final_layer_norm')
-    elif 'llama' in model_name or 'vicuna' in model_name:
+    if 'llama' in model_name or 'qwen2.5' in model_name or 'mistral' in model_name:
         meta = metas['llama']
-    elif 'bloom' in model_name:
-        meta = metas['bloom']
-    else:
-        raise NotImplementedError(f"{model_name} model is not implemented.")
     
     map_layer = meta['map_layer']
     layers_owq = {l:False for l in map_layer.values()}
@@ -96,8 +84,6 @@ class OWQ(BASE):
         self.model.config.use_cache = False
         if 'llama' in model_name or 'qwen2.5' in model_name or 'mistral' in model_name:
             layers = self.model.model.layers
-        elif 'opt' in model_name:
-            layers = self.model.model.decoder.layers
         else:
             raise NotImplementedError(f"{model_name} model is not implemented.")
 
@@ -108,10 +94,6 @@ class OWQ(BASE):
             self.model.model.norm = self.model.model.norm.to(self.dev)
             if hasattr(self.model.model, 'rotary_emb'):
                 self.model.model.rotary_emb = self.model.model.rotary_emb.to(self.dev)
-        elif 'opt' in model_name:
-            self.model.model.decoder.embed_tokens = self.model.model.decoder.embed_tokens.to(self.dev)
-            self.model.model.decoder.final_layer_norm = self.model.model.decoder.final_layer_norm.to(self.dev)
-            self.model.model.decoder.embed_positions = self.model.model.decoder.embed_positions.to(self.dev)
         else:
             raise NotImplementedError(f"{model_name} model is not implemented.")
 
@@ -149,10 +131,6 @@ class OWQ(BASE):
             self.model.model.norm = self.model.model.norm.cpu()
             if hasattr(self.model.model, 'rotary_emb'):
                 self.model.model.rotary_emb = self.model.model.rotary_emb.cpu()
-        elif 'opt' in model_name:
-            self.model.model.decoder.embed_tokens = self.model.model.decoder.embed_tokens.cpu()
-            self.model.model.decoder.final_layer_norm = self.model.model.decoder.final_layer_norm.cpu()
-            self.model.model.decoder.embed_positions = self.model.model.decoder.embed_positions.cpu()
         torch.cuda.empty_cache()
 
         outs = torch.zeros_like(inps)
@@ -187,15 +165,8 @@ class OWQ(BASE):
                             ['mlp.up_proj', 'mlp.gate_proj'],
                             ['mlp.down_proj']
                         ]
-                elif 'opt' in model_name:
-                    sequential = [
-                        ['self_attn.k_proj', 'self_attn.v_proj', 'self_attn.q_proj'],
-                        ['self_attn.out_proj'],
-                        ['fc1'],
-                        ['fc2']
-                    ]
                 else:
-                    raise NotImplementedError
+                    raise NotImplementedError(f"{model_name} model is not implemented.")
             else:
                 sequential = [list(full.keys())]
         

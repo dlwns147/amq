@@ -80,7 +80,6 @@ class Evaluator:
                     if not flag:
                         raise NotImplementedError(f'{linear}: {bits} is not available')
         else:
-            # TODO: Implement Quantization method(AWQ, GPTQ, OWQ)
             self.model = get_quantized_model(self.model, self.tokenizer, method, arch, get_bits_usage(arch, self.config, self.group_size), self.group_size, self.config, self.dev, device_map=self.device_map)
             self.model = self.model.to(self.dev)
             self.model.eval()

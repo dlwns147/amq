@@ -3,7 +3,6 @@ from .gptq import GPTQ
 from .owq import OWQ
 
 from utils.func import clean_up
-from accelerate import dispatch_model
 
 METHOD = {
     'awq': AWQ,
