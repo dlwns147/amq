@@ -1,24 +1,17 @@
 # Core dependencies
 torch>=2.0.0
-transformers==4.45.2
+transformers>=4.40.0
 accelerate>=0.20.0
 
 # Quantization
-hqq==0.2.2
+hqq>=0.2.0
 
 # Optimization
-pymoo==0.6.1.3
-pySOT
+pymoo>=0.6.0
 
-# Data handling
+# Utilities
 datasets
 tqdm
-
-# Machine Learning
 scikit-learn
 numpy
-pandas
-
-# Additional utilities
-pyyaml
-
+scipy

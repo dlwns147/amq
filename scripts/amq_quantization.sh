@@ -11,14 +11,10 @@ MODEL_NAME=Llama-2-7b-hf
 CONFIG=amq/configs/llama.json
 
 ## Quantization Args
-METHOD=${2}
-# METHOD=awq
-# METHOD=gptq
-# METHOD=owq
+METHOD=awq
 GROUP_SIZE=128
 NUM_OF_CANDIDATES=1
-# TARGET_BITS=3.0
-TARGET_BITS=${3}
+TARGET_BITS=3.0
 TARGET_BITS_OFFSET=0.005
 LOAD=amq/results/search/2512021742_Llama-2-7b-hf_dataset_wikitext2/iter_200.stats
 
