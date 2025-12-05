@@ -1,5 +1,8 @@
 # AMQ: Enabling AutoML for Mixed-precision Weight-Only Quantization of Large Language Models
 
+<p align="center">
+  <img width="256" height="256" alt="대표이미지1" src="https://github.com/user-attachments/assets/b4ee5483-bbf3-440a-852e-d4defad436d9" />
+</p>
 This is the official repository for **AMQ**, accepted as an **oral paper** at *EMNLP 2025 Main Conference*.
 
 📄 Paper: https://arxiv.org/abs/2509.12019 
