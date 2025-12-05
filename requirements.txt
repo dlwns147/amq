@@ -1,6 +1,6 @@
 # Core dependencies
 torch>=2.0.0
-transformers>=4.40.0
+transformers>=4.45.2
 accelerate>=0.20.0
 
 # Quantization
