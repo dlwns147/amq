@@ -69,7 +69,7 @@ bash scripts/amq_quantization_proxy
 - Python >= 3.8
 - PyTorch >= 2.0.0
 - Transformers == 4.45.2
-- HQQ == 0.2.0
+- HQQ >= 0.2.0
 - See requirements.txt for more
 
 ## Configuration Files
