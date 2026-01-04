@@ -101,6 +101,7 @@ def main():
 
     parser.add_argument('--model_path', type=str, help='model path', default = 'meta-llama')
     parser.add_argument('--model_name', type=str, help='model name', default = 'Llama-2-7b-hf')
+    parser.add_argument('--save_path', type=str, help='save path', default = '/SSD/hqq')
     parser.add_argument('--use_ft', action='store_true', help='use faster transformer')
 
     parser.add_argument('--batch_size', type=int, help='batch size', default = 1)
@@ -112,7 +113,7 @@ def main():
     parser.add_argument('--gemv', action='store_true', help='gemv')
     parser.add_argument('--ttft', action='store_true', help='ttft')
     parser.add_argument('--memory', action='store_true', help='memory')
-    parser.add_argument('--peak_memory', action='store_true', help='peak memory')
+    parser.add_argument('--peak_memory', action='store_true', help='peak memory & It only works with TPS')
 
     parser.add_argument('--target_bits', type=float, help='target bits', default = 4)
     parser.add_argument('--arch_path', type=str, help='arch path', default = None)
@@ -125,23 +126,18 @@ def main():
     target_bits = args.target_bits
     result = {}
 
-    int2_model = AutoHQQHFModel.from_quantized(f'/SSD/Woo/hqq/{args.model_name}_2bit_128gs_1axis')
-    int3_model = AutoHQQHFModel.from_quantized(f'/SSD/Woo/hqq/{args.model_name}_3bit_128gs_1axis')
-    int4_model = AutoHQQHFModel.from_quantized(f'/SSD/Woo/hqq/{args.model_name}_4bit_128gs_1axis')
+    int2_model = AutoHQQHFModel.from_quantized(f'{args.save_path}/{args.model_name}_2bit_128gs_1axis')
+    int3_model = AutoHQQHFModel.from_quantized(f'{args.save_path}/{args.model_name}_3bit_128gs_1axis')
+    int4_model = AutoHQQHFModel.from_quantized(f'{args.save_path}/{args.model_name}_4bit_128gs_1axis')
 
     int2_model = int2_model.to(default_device)
     int3_model = int3_model.to(default_device)
     int4_model = int4_model.to(default_device)
 
-    # prepare_for_inference(int2_model, backend = 'gptq', load_path = f"/SSD/Woo/hqq/{model_id}_2bit_128gs_1axis_{args.backend_2bit.upper()}Linear.pt")
-    # prepare_for_inference(int3_model, backend = 'gptq', load_path = f"/SSD/Woo/hqq/{model_id}_3bit_128gs_1axis_GPTQLinear.pt")
-    # prepare_for_inference(int4_model, backend = 'gptq', load_path = f"/SSD/Woo/hqq/{model_id}_4bit_128gs_1axis_GPTQLinear.pt")
-    # prepare_for_inference(int2_model, backend = 'gptq')
-    # prepare_for_inference(int3_model, backend = 'gptq')
-    # prepare_for_inference(int4_model, backend = 'ft')
-    prepare_for_inference(int2_model, backend = 'gptq', load_path = f"/SSD/Woo/hqq/{args.model_name}_2bit_128gs_1axis_GPTQLinear.pt")
-    prepare_for_inference(int3_model, backend = 'gptq', load_path = f"/SSD/Woo/hqq/{args.model_name}_3bit_128gs_1axis_GPTQLinear.pt")
-    prepare_for_inference(int4_model, backend = 'ft', load_path = f"/SSD/Woo/hqq/{args.model_name}_4bit_128gs_1axis_FTLinear.pt")
+    prepare_for_inference(int2_model, backend = 'gptq', load_path = f"{args.save_path}/{args.model_name}_2bit_128gs_1axis_GPTQLinear.pt")
+    prepare_for_inference(int3_model, backend = 'gptq', load_path = f"{args.save_path}/{args.model_name}_3bit_128gs_1axis_GPTQLinear.pt")
+    prepare_for_inference(int4_model, backend = 'ft', load_path = f"{args.save_path}/{args.model_name}_4bit_128gs_1axis_FTLinear.pt")
+    # prepare_for_inference(int4_model, backend = 'gptq', load_path = f"{args.save_path}/{args.model_name}_4bit_128gs_1axis_GPTQLinear.pt")
 
     int2_layers = int2_model.model.layers
     int3_layers = int3_model.model.layers
@@ -213,7 +209,8 @@ def main():
     if args.arch_path is not None:
         if os.path.exists(args.arch_path):
             with open(args.arch_path, 'r') as f:
-                archs = json.load(f)['candidates']
+                archs = json.load(f)
+                archs = archs['archive'] + archs['candidates']
         else:
             raise FileNotFoundError(f"Arch file {args.arch_path} not found")
 
@@ -293,27 +290,7 @@ def main():
     if args.file_name:
         with open(result_path, 'w') as f:
             result.update({'args' : vars(args)})
-            result.update({'unit' : {'tps' : 'tokens/second', 'gemm' : 'tokens/second', 'gemv' : 'tokens/second', 'ttft' : 'latency(ms)', 'peak_memory' : 'GB'}})
             json.dump(result, f, indent=4)
-
-        field = list(result['fp16'].keys())
-        fp16_value = list(result['fp16'].values())
-        int2_value = list(result['2bit'].values())
-        int3_value = list(result['3bit'].values())
-        int4_value = list(result['4bit'].values())
-
-        fp16_value = [list(v.values())[0] if isinstance(v, dict) else v for v in fp16_value]
-        int2_value = [list(v.values())[0] if isinstance(v, dict) else v for v in int2_value]
-        int3_value = [list(v.values())[0] if isinstance(v, dict) else v for v in int3_value]
-        int4_value = [list(v.values())[0] if isinstance(v, dict) else v for v in int4_value]
-
-        with open(result_path.replace('.json', '.csv'), 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(field)
-            writer.writerow(fp16_value)
-            writer.writerow(int2_value)
-            writer.writerow(int3_value)
-            writer.writerow(int4_value)
 
 
 if __name__ == '__main__':
