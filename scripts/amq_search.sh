@@ -1,3 +1,5 @@
+#!/bin/bash
+
 TODAY=`date +%y%m%d%H%M`
 
 ## GPU Args
