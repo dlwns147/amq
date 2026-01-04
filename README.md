@@ -41,7 +41,6 @@ bash scripts/amq_quantiztion_proxy.sh 0
 ```
 
 ### 1. Measure Layer Sensitivity
-
 ```bash
 bash scripts/amq_sensitivity.sh 0
 ```
@@ -56,6 +55,18 @@ bash scripts/amq_search.sh 0
 
 ```bash
 bash scripts/amq_quantization_proxy
+```
+
+## Speed Benchmark
+
+### 0. Install kernel environment
+```bash
+bash scripts/amq_install_kernel.sh
+```
+
+### 1. Measure Speed (It requires the Quantization proxy)
+```bash
+bash scripts/amq_speed_benchmark.sh 0
 ```
 
 ## Supported Models
