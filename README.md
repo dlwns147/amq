@@ -4,9 +4,25 @@
   <img width="256" height="256" alt="대표이미지1" src="https://github.com/user-attachments/assets/1fbb9aee-0156-4cdc-a74c-4896f90d0c69" />
 </p>
 
-This is the official repository for **AMQ**, accepted as an **oral paper** at *EMNLP 2025 Main Conference*.
+<div align="center">
+  
+## 🎉 Accepted as **Oral Paper** at EMNLP 2025 Main Conference! 🎉
 
-📄 Paper: https://arxiv.org/abs/2509.12019 
+[![EMNLP 2025](https://img.shields.io/badge/EMNLP%202025-Oral%20Paper-ff6b6b?style=for-the-badge&logo=semantic-scholar&logoColor=white)](https://arxiv.org/abs/2509.12019)
+[![arXiv](https://img.shields.io/badge/arXiv-2509.12019-b31b1b?style=for-the-badge&logo=arxiv&logoColor=white)](https://arxiv.org/abs/2509.12019)
+
+</div>
+
+# Authors
+
+<p align="center">
+<a href="https://github.com/dlwns147">Sangjun Lee</a>*, <a href="https://github.com/dntmdxor99">Seung-taek Woo</a>*, <a href="https://github.com/jinjungyu">Jun-gyu Jin</a>, <a href="https://github.com/xvyaward">Changhun Lee</a>, Eunhyeok Park<br>
+<sub><i>* Equal contribution</i></sub>
+</p>
+
+## Description
+
+This is the official repository for **AMQ**.
 
 AMQ is an automated mixed-precision quantization library for Large Language Models (LLMs). 
 It uses multi-objective optimization to find the optimal balance between model performance and efficiency.
