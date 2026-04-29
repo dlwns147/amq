@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from datasets import load_dataset
 
-def get_awq_calib_dataset(data="pileval", tokenizer=None, n_samples=512, block_size=512):
+def get_awq_calib_dataset(data="pileval", tokenizer=None, n_samples=128, block_size=512):
     if data == "pileval":
         dataset = load_dataset("mit-han-lab/pile-val-backup", split="validation")
     else:
