@@ -160,7 +160,7 @@ def run_awq(
         if sum(1 for _ in layer.parameters()):
             inps = inps.to(next(layer.parameters()).device)  # in case multi-gpu
         # get output as next layer's input
-        inps = layer(inps, **layer_kwargs)[0]
+        inps = layer(inps, **layer_kwargs)
         for h in handles:
             h.remove()
         # now solve for scaling and clipping
